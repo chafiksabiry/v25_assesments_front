@@ -31,11 +31,15 @@ export default defineConfig({
     modulePreload: true,
     cssCodeSplit: true, // Enable CSS splitting for modular builds
     rollupOptions: {
-      output: {
+/*       output: {
         format: 'system', // Use SystemJS for Qiankun integration
         entryFileNames: '[name].js', // Output JavaScript files with `.js` extensions
         chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
+      }, */
+      output: {
+        format: 'es', // Necessary for Qiankun integration
+        entryFileNames : '[name].js',
       },
       external: isQiankun
         ? ['react', 'react-dom'] // Treat React and ReactDOM as external to avoid duplication in host and microfrontend
