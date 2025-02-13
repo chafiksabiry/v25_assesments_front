@@ -109,16 +109,13 @@ function AssessmentDialog({ isOpen, onClose, languages, profileData, onProfileUp
     console.log('handleContactCenterAssessmentComplete param :', results);
     try {
       console.log("assessmentResults in handleContactCenterAssessmentComplete before :", assessmentResults)
-      setAssessmentResults(prev => ({
-        ...prev,
-        contactCenter: results,
-      }));
-      let updatedResult = {
-        ...assessmentResults,
-        contactCenter: results
-      };
-      console.log("updatedResult :", updatedResult)
-      await generateFinalRecommendations(updatedResult);
+      setAssessmentResults(prev => {
+        const updatedResult = { ...prev, contactCenter: results };
+        console.log("Updated assessmentResults inside setState:", updatedResult);
+        return updatedResult; // Correctly returns the new state
+      });
+      //console.log("updatedResult :", updatedResult)
+      //await generateFinalRecommendations(updatedResult);
     } catch (error) {
       console.error('Error saving contact center assessment:', error);
     }
@@ -178,7 +175,10 @@ function AssessmentDialog({ isOpen, onClose, languages, profileData, onProfileUp
   };
 
   useEffect(() => {
-    console.log('Assessment Results Updated:', assessmentResults);
+    if (assessmentResults.contactCenter) { // Ensure contactCenter exists before calling
+      console.log("Assessment Results Updated:", assessmentResults);
+      generateFinalRecommendations(assessmentResults);
+    }
   }, [assessmentResults]);
 
   return (
