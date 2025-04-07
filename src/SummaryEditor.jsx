@@ -789,6 +789,10 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
                           <div className="relative inline-block min-w-[80px]">
                             <button
                               onClick={(e) => {
+                                // Close all other dropdowns first
+                                const allDropdowns = document.querySelectorAll('.language-proficiency-dropdown');
+                                allDropdowns.forEach(d => d.classList.add('hidden'));
+                                // Toggle current dropdown
                                 const dropdown = e.currentTarget.nextElementSibling;
                                 dropdown.classList.toggle('hidden');
                               }}
@@ -799,17 +803,17 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                               </svg>
                             </button>
-                            <div className="hidden absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-48 z-20">
+                            <div className="language-proficiency-dropdown hidden absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-48 z-20">
                               {proficiencyLevels.map(level => (
                                 <button
                                   key={level.value}
                                   className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center justify-between group/item ${
                                     lang.proficiency === level.value ? 'text-blue-600 bg-blue-50/50' : 'text-gray-700'
                                   }`}
-                                  onClick={() => {
-                                    updateLanguageProficiency(index, level.value);
-                                    // Hide dropdown after selection
-                                    const dropdowns = document.querySelectorAll('.proficiency-dropdown');
+                                  onClick={async () => {
+                                    await updateLanguageProficiency(index, level.value);
+                                    // Close the dropdown after selecting a value
+                                    const dropdowns = document.querySelectorAll('.language-proficiency-dropdown');
                                     dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
                                   }}
                                 >
