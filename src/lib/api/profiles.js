@@ -45,13 +45,10 @@ export const updateSkills = async (id, skills) => {
   }
 };
 
-export const updateLanguageAssessment = async (id, language, results) => {
+export const updateLanguageAssessment = async (id, data) => {
   try {
-    const { data } = await api.post(`/profiles/${id}/language-assessment`, {
-      language,
-      results
-    });
-    return data;
+    const { data: response } = await api.post(`/profiles/${id}/language-assessment`, data);
+    return response;
   } catch (error) {
     throw error.response?.data || error;
   }

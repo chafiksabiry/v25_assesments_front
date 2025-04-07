@@ -23,22 +23,24 @@ function AssessmentDialog({ isOpen, onClose, languages, profileData, onProfileUp
   const [analyzing, setAnalyzing] = useState(false);
   const [showingProfile, setShowingProfile] = useState(false);
 
-  const handleLanguageAssessmentComplete = async (results) => {
+  const handleLanguageAssessmentComplete = async (assessmentData) => {
     try {
-      // Save language assessment results to the database
-      console.log('updateLanguageAssessment body : ', languages[currentLanguage].language, results);
+      // Save language assessment results and proficiency to the database
+      console.log('updateLanguageAssessment body : ', languages[currentLanguage].language, assessmentData);
 
       const updatedProfile = await updateLanguageAssessment(
         profileData._id,
         languages[currentLanguage].language,
-        results
+        assessmentData.proficiency,
+        assessmentData.results
       );
+
       console.log("updatedProfile : ", updatedProfile);
       setAssessmentResults(prev => ({
         ...prev,
         languages: {
           ...prev.languages,
-          [languages[currentLanguage].language]: results
+          [languages[currentLanguage].language]: assessmentData.results
         }
       }));
 

@@ -103,10 +103,14 @@ export const useProfile = (profileId) => {
     }
   };
 
-  const updateLanguageAssessment = async (id, language, results) => {
+  const updateLanguageAssessment = async (id, language, proficiency, results) => {
     try {
       setLoading(true);
-      const updatedProfile = await profileApi.updateLanguageAssessment(id, language, results);
+      const updatedProfile = await profileApi.updateLanguageAssessment(id, {
+        language,
+        proficiency,
+        results
+      });
       console.log('updatedProfile after api call : ', updatedProfile);
       setProfile(updatedProfile);
       setError(null);
