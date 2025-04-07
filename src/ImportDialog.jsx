@@ -204,7 +204,55 @@ function ImportDialog({ isOpen, onClose, onImport }) {
         messages: [
           {
             role: "system",
-            content: `Analyze the CV for skills and competencies and return them in the exact JSON format shown below:
+            content: `Analyze the CV for skills and competencies, with special attention to language proficiency evaluation. For languages, you must intelligently map any proficiency description to the CEFR scale (A1-C2) based on the following comprehensive guidelines:
+
+            CEFR Level Assessment Guidelines:
+
+            A1 (Beginner/Basic)
+            - Can understand and use basic phrases
+            - Can introduce themselves and others
+            - Expressions suggesting A1: basic, elementary, débutant, notions, beginner, basic words and phrases
+            - Context clues: "took introductory courses", "basic communication", "learning basics"
+
+            A2 (Elementary)
+            - Can communicate in simple, routine situations
+            - Can describe aspects of background, environment
+            - Expressions suggesting A2: pre-intermediate, basic working knowledge, connaissance basique, can read simple texts
+            - Context clues: "can handle simple work communications", "basic professional interactions"
+
+            B1 (Intermediate)
+            - Can deal with most situations while traveling
+            - Can describe experiences, events, dreams, hopes
+            - Expressions suggesting B1: intermediate, working knowledge, niveau moyen, bonne base, conversational
+            - Context clues: "can participate in meetings", "handle routine work tasks"
+
+            B2 (Upper Intermediate)
+            - Can interact with degree of fluency with native speakers
+            - Can produce clear, detailed text
+            - Expressions suggesting B2: upper intermediate, professional working, bonne maitrise, fluent, professional proficiency
+            - Context clues: "regular professional use", "conduct business meetings", "negotiate with clients"
+
+            C1 (Advanced)
+            - Can use language flexibly and effectively
+            - Can produce clear, well-structured, detailed texts
+            - Expressions suggesting C1: advanced, highly fluent, excellent, très bonne maitrise, native-like, full professional proficiency
+            - Context clues: "worked in language", "lived in country for years", "conducted complex negotiations"
+
+            C2 (Mastery)
+            - Can understand virtually everything heard or read
+            - Can express themselves spontaneously, precisely, and fluently
+            - Expressions suggesting C2: native, mother tongue, bilingual, langue maternelle, perfect mastery
+            - Context clues: "native speaker", "grew up speaking", "primary language of education"
+
+            Analysis Instructions:
+            1. Look for both explicit statements and contextual clues about language use
+            2. Consider the professional context where the language is used
+            3. Look for indicators of duration and depth of language exposure
+            4. If the CV mentions work experience or education in a country, factor this into the assessment
+            5. When in doubt between two levels, consider the overall context of language use
+            6. Default to B1 only if there's significant uncertainty and no contextual clues
+
+            Return in this exact JSON format:
             {
               "technical": [{
                 "name": "string",
@@ -223,7 +271,7 @@ function ImportDialog({ isOpen, onClose, onImport }) {
               }],
               "languages": [{
                 "language": "string",
-                "proficiency": "string"
+                "proficiency": "string (MUST be one of: A1, A2, B1, B2, C1, C2)"
               }]
             }`
           },

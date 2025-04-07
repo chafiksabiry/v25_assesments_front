@@ -11,7 +11,7 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
   const [loading, setLoading] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [editedProfile, setEditedProfile] = useState(profileData);
-  const [tempLanguage, setTempLanguage] = useState({ language: '', proficiency: 'Intermediate' });
+  const [tempLanguage, setTempLanguage] = useState({ language: '', proficiency: 'B1' });
   const [tempIndustry, setTempIndustry] = useState('');
   const [tempCompany, setTempCompany] = useState('');
   const [showAssessment, setShowAssessment] = useState(false);
@@ -27,6 +27,14 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     yearsExperience: ''
   });
 
+  const proficiencyLevels = [
+    { value: 'A1', label: 'A1 - Beginner', description: 'Can understand and use basic phrases, introduce themselves' },
+    { value: 'A2', label: 'A2 - Elementary', description: 'Can communicate in simple, routine situations' },
+    { value: 'B1', label: 'B1 - Intermediate', description: 'Can deal with most situations while traveling, describe experiences' },
+    { value: 'B2', label: 'B2 - Upper Intermediate', description: 'Can interact fluently with native speakers, produce clear text' },
+    { value: 'C1', label: 'C1 - Advanced', description: 'Can use language flexibly, produce clear well-structured text' },
+    { value: 'C2', label: 'C2 - Mastery', description: 'Can understand virtually everything, express spontaneously' }
+  ];
 
   useEffect(() => {
     if (generatedSummary) {
@@ -68,7 +76,7 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     }
 
     // Validate email
-   if (!editedProfile.professionalSummary.currentRole?.trim()) {
+    if (!editedProfile.professionalSummary.currentRole?.trim()) {
       errors.currentRole = 'Current role is required';
       console.error('Current role validation failed:', errors.currentRole);
     }
@@ -89,10 +97,12 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     if (!editedProfile.professionalSummary.notableCompanies?.length) {
       errors.companies = 'At least one notable company is required';
       console.error('Companies validation failed:', errors.companies);
-    }  if (!editedProfile.personalInfo.email?.trim()) {
+    }  
+    
+    if (!editedProfile.personalInfo.email?.trim()) {
       errors.email = 'Email is required';
       console.error('Email validation failed:', errors.email);
-      } else if (!emailRegex.test(editedProfile.personalInfo.email)) {
+    } else if (!emailRegex.test(editedProfile.personalInfo.email)) {
       errors.email = 'Please enter a valid email address';
       console.error('Email validation failed:', errors.email);
     }
@@ -108,7 +118,7 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
 
     console.log('Validation errors before setting state:', errors);
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return { isValid: Object.keys(errors).length === 0, errors };
   };
 
   // Handle profile updates from AssessmentDialog
@@ -406,7 +416,7 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
         }
       }));
 
-      setTempLanguage({ language: '', proficiency: 'Intermediate' });
+      setTempLanguage({ language: '', proficiency: 'B1' });
       setValidationErrors(prev => ({ ...prev, languages: '' }));
     } catch (error) {
       console.error('Error adding language:', error);
@@ -442,6 +452,29 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     }
   };
 
+  const updateLanguageProficiency = async (index, newProficiency) => {
+    try {
+      const updatedLanguages = editedProfile.personalInfo.languages.map((lang, i) => 
+        i === index ? { ...lang, proficiency: newProficiency } : lang
+      );
+
+      await updateBasicInfo(editedProfile._id, {
+        ...editedProfile.personalInfo,
+        languages: updatedLanguages
+      });
+
+      setEditedProfile(prev => ({
+        ...prev,
+        personalInfo: {
+          ...prev.personalInfo,
+          languages: updatedLanguages
+        }
+      }));
+    } catch (error) {
+      console.error('Error updating language proficiency:', error);
+    }
+  };
+
   const regenerateSummary = async () => {
     try {
       setLoading(true);
@@ -474,17 +507,22 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
   };
 
   const pushToRepsProfile = () => {
-    const isValid = validateProfile();
+    const { isValid, errors } = validateProfile();
     console.log('validateProfile() result:', isValid);
+    
     if (isValid) {
       setShowAssessment(true);
     } else {
-      // Scroll to the first error
-      const firstError = Object.keys(validationErrors)[0];
-      const errorElement = document.getElementById(`error-${firstError}`);
-      if (errorElement) {
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      // Use setTimeout to ensure the DOM has updated with the error elements
+      setTimeout(() => {
+        const firstErrorKey = Object.keys(errors)[0];
+        const errorElement = document.getElementById(`error-${firstErrorKey}`);
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          console.error('Error element not found:', firstErrorKey);
+        }
+      }, 0);
     }
   };
 
@@ -743,15 +781,60 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
                   <div className="space-y-4">
                     <div className="flex flex-wrap gap-2">
                       {editedProfile.personalInfo.languages.map((lang, index) => (
-                        <div key={index} className="flex items-center gap-2 bg-white/50 px-3 py-1 rounded-full">
+                        <div key={index} className="flex items-center gap-3 bg-white/50 px-4 py-2 rounded-full group relative hover:bg-white transition-colors duration-200">
                           <span className="text-sm font-medium text-gray-700">
-                            {`${lang.language} (${lang.proficiency})`}
+                            {lang.language}
                           </span>
+                          <div className="h-4 w-px bg-gray-300"></div>
+                          <div className="relative inline-block min-w-[80px]">
+                            <button
+                              onClick={(e) => {
+                                const dropdown = e.currentTarget.nextElementSibling;
+                                dropdown.classList.toggle('hidden');
+                              }}
+                              className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+                            >
+                              {lang.proficiency}
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            <div className="hidden absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-48 z-20">
+                              {proficiencyLevels.map(level => (
+                                <button
+                                  key={level.value}
+                                  className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center justify-between group/item ${
+                                    lang.proficiency === level.value ? 'text-blue-600 bg-blue-50/50' : 'text-gray-700'
+                                  }`}
+                                  onClick={() => {
+                                    updateLanguageProficiency(index, level.value);
+                                    // Hide dropdown after selection
+                                    const dropdowns = document.querySelectorAll('.proficiency-dropdown');
+                                    dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
+                                  }}
+                                >
+                                  <span>{level.label}</span>
+                                  {lang.proficiency === level.value && (
+                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
+                                  <div className="absolute hidden group-hover/item:block bg-black text-white text-xs rounded p-2 z-30 left-full ml-2 -translate-y-1/2 w-48">
+                                    {level.description}
+                                  </div>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="h-4 w-px bg-gray-300"></div>
                           <button
                             onClick={() => removeLanguage(index)}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-gray-400 hover:text-red-500 transition-colors duration-200"
+                            title="Remove language"
                           >
-                            ×
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
                           </button>
                         </div>
                       ))}
@@ -765,22 +848,81 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
                         className="flex-1 p-2 border rounded-md bg-white/50"
                         placeholder="Add a language"
                       />
-                      <select
-                        value={tempLanguage.proficiency}
-                        onChange={(e) => setTempLanguage(prev => ({ ...prev, proficiency: e.target.value }))}
-                        className="p-2 border rounded-md bg-white/50"
-                      >
-                        <option>Basic</option>
-                        <option>Intermediate</option>
-                        <option>Advanced</option>
-                        <option>Native</option>
-                      </select>
+                      <div className="relative inline-block min-w-[180px]">
+                        <button
+                          onClick={(e) => {
+                            const dropdowns = document.querySelectorAll('.proficiency-dropdown');
+                            dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
+                            const dropdown = e.currentTarget.nextElementSibling;
+                            dropdown.classList.toggle('hidden');
+                          }}
+                          className="w-full flex items-center justify-between p-2 border rounded-md bg-white/50 text-sm text-gray-700"
+                        >
+                          <span>{proficiencyLevels.find(l => l.value === tempLanguage.proficiency)?.label}</span>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                        <div className="proficiency-dropdown hidden absolute top-full left-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 w-full z-20">
+                          {proficiencyLevels.map(level => (
+                            <button
+                              key={level.value}
+                              className={`w-full px-4 py-2 text-left text-sm hover:bg-blue-50 flex items-center justify-between ${
+                                tempLanguage.proficiency === level.value ? 'text-blue-600 bg-blue-50/50' : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                setTempLanguage(prev => ({ ...prev, proficiency: level.value }));
+                                // Hide dropdown after selection
+                                const dropdowns = document.querySelectorAll('.proficiency-dropdown');
+                                dropdowns.forEach(dropdown => dropdown.classList.add('hidden'));
+                              }}
+                            >
+                              <span>{level.label}</span>
+                              {tempLanguage.proficiency === level.value && (
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                       <button
                         onClick={addLanguage}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
                       >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
                         Add
                       </button>
+                    </div>
+                    
+                    {/* Proficiency Level Descriptions */}
+                    <div className="mt-4 bg-white rounded-lg p-4 border border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">Language Proficiency Levels:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {proficiencyLevels.map(level => (
+                          <div 
+                            key={level.value}
+                            className={`p-3 rounded-lg border ${
+                              tempLanguage.proficiency === level.value 
+                                ? 'border-blue-200 bg-blue-50' 
+                                : 'border-gray-100 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-800">{level.label}</span>
+                              {tempLanguage.proficiency === level.value && (
+                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600">{level.description}</p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -813,13 +955,16 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
                     {editedProfile.personalInfo.languages.map((lang, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-white/50 text-gray-700 rounded-full text-sm font-medium"
+                        className="px-3 py-1 bg-white/50 text-gray-700 rounded-full text-sm font-medium group relative"
                       >
-                        {`${lang.language} (${lang.proficiency})`}
+                        <span>{lang.language}</span>
+                        <span className="text-blue-600 ml-1">({lang.proficiency})</span>
+                        <div className="absolute hidden group-hover:block bg-black text-white text-xs rounded p-2 z-10 bottom-full mb-1 left-1/2 transform -translate-x-1/2 w-48">
+                          {proficiencyLevels.find(level => level.value === lang.proficiency)?.description}
+                        </div>
                       </span>
                     ))}
                   </div>
-                  {/* {renderError(validationErrors.languages, 'languages')} */}
                 </div>
                 <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl">
                   <h3 className="text-sm font-medium text-gray-500 mb-2">⭐ Experience</h3>
