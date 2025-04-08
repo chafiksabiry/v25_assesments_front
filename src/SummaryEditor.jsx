@@ -560,153 +560,166 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     </div>
   );
 
-  const renderExperienceSection = () => (
-    <div className="mb-8 space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Professional Experience</h3>
-        {editedProfile.experience?.map((role, index) => (
-          <div key={index} className="mb-6 last:mb-0">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="text-lg font-semibold text-gray-800">{role.title}</h4>
-                <p className="text-gray-600">{role.company}</p>
+  const renderExperienceSection = () => {
+    const formatDate = (date) => {
+      if (date === 'present') return 'Present';
+      if (date instanceof Date) {
+        return new Intl.DateTimeFormat('en-US', { 
+          month: 'short',
+          year: 'numeric'
+        }).format(new Date(date));
+      }
+      return date; // fallback
+    };
+
+    return (
+      <div className="mb-8 space-y-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Professional Experience</h3>
+          {editedProfile.experience?.map((role, index) => (
+            <div key={index} className="mb-6 last:mb-0">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-lg font-semibold text-gray-800">{role.title}</h4>
+                  <p className="text-gray-600">{role.company}</p>
+                </div>
+                <div className="text-sm text-gray-500">
+                  {formatDate(role.startDate)} - {formatDate(role.endDate)}
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                {role.startDate} - {role.endDate || 'Present'}
+              <ul className="mt-3 space-y-2">
+                {role.responsibilities?.map((resp, idx) => (
+                  <li key={idx} className="text-gray-700 flex items-start">
+                    <span className="text-blue-500 mr-2">•</span>
+                    {resp}
+                  </li>
+                ))}
+              </ul>
+              {role.achievements?.length > 0 && (
+                <div className="mt-3">
+                  <h5 className="text-sm font-semibold text-gray-700 mb-2">Key Achievements:</h5>
+                  <ul className="space-y-1">
+                    {role.achievements.map((achievement, idx) => (
+                      <li key={idx} className="text-gray-700 flex items-start">
+                        <span className="text-green-500 mr-2">✓</span>
+                        {achievement}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {editingProfile ? (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Industry Expertise</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {editedProfile.professionalSummary?.industries?.map((industry, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
+                      <span className="text-sm font-medium text-gray-700">{industry}</span>
+                      <button
+                        onClick={() => removeIndustry(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {renderError(validationErrors.industries, 'industries')}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={tempIndustry}
+                    onChange={(e) => setTempIndustry(e.target.value)}
+                    className="flex-1 p-2 border rounded-md"
+                    placeholder="Add an industry"
+                  />
+                  <button
+                    onClick={addIndustry}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  >
+                    Add
+                  </button>
+                </div>
               </div>
             </div>
-            <ul className="mt-3 space-y-2">
-              {role.responsibilities?.map((resp, idx) => (
-                <li key={idx} className="text-gray-700 flex items-start">
-                  <span className="text-blue-500 mr-2">•</span>
-                  {resp}
-                </li>
-              ))}
-            </ul>
-            {role.achievements?.length > 0 && (
-              <div className="mt-3">
-                <h5 className="text-sm font-semibold text-gray-700 mb-2">Key Achievements:</h5>
-                <ul className="space-y-1">
-                  {role.achievements.map((achievement, idx) => (
-                    <li key={idx} className="text-gray-700 flex items-start">
-                      <span className="text-green-500 mr-2">✓</span>
-                      {achievement}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
 
-      {editingProfile ? (
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Industry Expertise</h3>
-            <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Notable Companies</h3>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {editedProfile.professionalSummary?.notableCompanies?.map((company, index) => (
+                    <div key={index} className="flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full">
+                      <span className="text-sm font-medium text-gray-700">{company}</span>
+                      <button
+                        onClick={() => removeCompany(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {renderError(validationErrors.companies, 'companies')}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={tempCompany}
+                    onChange={(e) => setTempCompany(e.target.value)}
+                    className="flex-1 p-2 border rounded-md"
+                    placeholder="Add a company"
+                  />
+                  <button
+                    onClick={addCompany}
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Industry Expertise</h3>
               <div className="flex flex-wrap gap-2">
                 {editedProfile.professionalSummary?.industries?.map((industry, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
-                    <span className="text-sm font-medium text-gray-700">{industry}</span>
-                    <button
-                      onClick={() => removeIndustry(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </button>
-                  </div>
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-blue-50 text-gray-700 rounded-full text-sm font-medium"
+                  >
+                    {industry}
+                  </span>
                 ))}
               </div>
               {renderError(validationErrors.industries, 'industries')}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={tempIndustry}
-                  onChange={(e) => setTempIndustry(e.target.value)}
-                  className="flex-1 p-2 border rounded-md"
-                  placeholder="Add an industry"
-                />
-                <button
-                  onClick={addIndustry}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                >
-                  Add
-                </button>
-              </div>
             </div>
-          </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Notable Companies</h3>
-            <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Notable Companies</h3>
               <div className="flex flex-wrap gap-2">
                 {editedProfile.professionalSummary?.notableCompanies?.map((company, index) => (
-                  <div key={index} className="flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full">
-                    <span className="text-sm font-medium text-gray-700">{company}</span>
-                    <button
-                      onClick={() => removeCompany(index)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      ×
-                    </button>
-                  </div>
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-purple-50 text-gray-700 rounded-full text-sm font-medium"
+                  >
+                    {company}
+                  </span>
                 ))}
               </div>
               {renderError(validationErrors.companies, 'companies')}
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={tempCompany}
-                  onChange={(e) => setTempCompany(e.target.value)}
-                  className="flex-1 p-2 border rounded-md"
-                  placeholder="Add a company"
-                />
-                <button
-                  onClick={addCompany}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-                >
-                  Add
-                </button>
-              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Industry Expertise</h3>
-            <div className="flex flex-wrap gap-2">
-              {editedProfile.professionalSummary?.industries?.map((industry, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-blue-50 text-gray-700 rounded-full text-sm font-medium"
-                >
-                  {industry}
-                </span>
-              ))}
-            </div>
-            {renderError(validationErrors.industries, 'industries')}
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Notable Companies</h3>
-            <div className="flex flex-wrap gap-2">
-              {editedProfile.professionalSummary?.notableCompanies?.map((company, index) => (
-                <span
-                  key={index}
-                  className="px-3 py-1 bg-purple-50 text-gray-700 rounded-full text-sm font-medium"
-                >
-                  {company}
-                </span>
-              ))}
-            </div>
-            {renderError(validationErrors.companies, 'companies')}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">

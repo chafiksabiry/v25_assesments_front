@@ -170,20 +170,41 @@ function ImportDialog({ isOpen, onClose, onImport }) {
         messages: [
           {
             role: "system",
-            content: `Analyze the work experience section of this CV and return it in the exact JSON format shown below:
+            content: `Analyze the work experience section of this CV and return it in the exact JSON format shown below. Follow these rules strictly:
+
+            Date Formatting Rules:
+            1. All dates must be in ISO format (YYYY-MM-DD)
+            2. For current/ongoing positions:
+               - endDate MUST be exactly the string "present" (lowercase)
+               - Do not use any other variations like "Present", "now", "current", etc.
+            3. For completed positions:
+               - endDate must be a valid date in YYYY-MM-DD format
+               - If only month and year are provided, use the last day of that month
+               - If only year is provided, use December 31st of that year
+            4. For startDate:
+               - Must always be a valid date in YYYY-MM-DD format
+               - If only month and year are provided, use the first day of that month
+               - If only year is provided, use January 1st of that year
+
+            Return in this exact format:
             {
               "roles": [{
                 "title": "string",
                 "company": "string",
-                "startDate": "string",
-                "endDate": "string",
+                "startDate": "YYYY-MM-DD",  // Must be a valid date
+                "endDate": "YYYY-MM-DD" | "present",  // Must be either a valid date or exactly "present"
                 "responsibilities": ["string"],
                 "achievements": ["string"]
               }],
               "industries": ["string"],
               "keyAreas": ["string"],
               "notableCompanies": ["string"]
-            }`
+            }
+
+            Example of valid dates:
+            - startDate: "2024-01-01"  // January 2024
+            - endDate: "2024-03-31"    // March 2024
+            - endDate: "present"        // Current position`
           },
           {
             role: "user",
@@ -373,7 +394,33 @@ function ImportDialog({ isOpen, onClose, onImport }) {
           context: a.context || '',
           skills: a.skills || []
         })),
-        experience: experience.roles || defaultArrays.roles
+        experience: (experience.roles || defaultArrays.roles).map(role => {
+          // For startDate, always convert to Date
+          const startDate = new Date(role.startDate);
+          
+          // For endDate, handle 'present' case specially
+          let endDate;
+          if (role.endDate === 'present') {
+            endDate = 'present';  // Keep as string for ongoing positions
+          } else {
+            // For past experiences, convert to Date
+            endDate = new Date(role.endDate);
+            
+            // Validate the date
+            if (isNaN(endDate.getTime())) {
+              throw new Error(`Invalid end date: ${role.endDate}`);
+            }
+          }
+
+          return {
+            title: role.title,
+            company: role.company,
+            startDate,         // Will be automatically handled as ISODate by MongoDB
+            endDate,          // Will be either Date object or 'present' string
+            responsibilities: role.responsibilities || [],
+            achievements: role.achievements || []
+          };
+        })
       };
 
       addAnalysisStep("Generating professional summary");
