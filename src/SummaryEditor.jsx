@@ -555,10 +555,11 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
         {title === 'Technical Skills' && '🔧'}
         {title === 'Professional Skills' && '💼'}
         {title === 'Soft Skills' && '🤝'}
+        {title === 'Notable Companies' && '🌟'}
         <span className="ml-2">{title}</span>
       </h3>
       <div className="flex flex-wrap gap-2">
-        {skills.map((skill, index) => (
+        {Array.isArray(skills) && skills.map((skill, index) => (
           <span
             key={index}
             className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 rounded-full text-sm font-medium border border-gray-200 hover:shadow-md transition-shadow duration-200"
@@ -1214,6 +1215,7 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
             {renderSkillSection('Technical Skills', editedProfile.skills.technical)}
             {renderSkillSection('Professional Skills', editedProfile.skills.professional)}
             {renderSkillSection('Soft Skills', editedProfile.skills.soft)}
+            {renderSkillSection('Notable Companies', editedProfile.professionalSummary.notableCompanies)}
           </div>
 
           {/* Summary Section */}
