@@ -59,7 +59,14 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
 
   useEffect(() => {
     if (profileData) {
-      setEditedProfile(profileData);
+      setEditedProfile({
+        ...profileData,
+        skills: profileData.skills || {
+          technical: [],
+          professional: [],
+          soft: []
+        }
+      });
     }
   }, [profileData]);
 
@@ -557,114 +564,126 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
   const renderSkillSection = (title, skills, type) => {
     const handleAdd = async () => {
       try {
-        let updatedData;
-        let tempValue = '';
-
         if (type === 'industries') {
           if (!tempIndustry.trim()) return;
-          updatedData = [...(editedProfile.professionalSummary.industries || []), tempIndustry];
+          const updatedIndustries = [...(editedProfile.professionalSummary.industries || []), tempIndustry];
           
           await updateProfileData(editedProfile._id, {
             professionalSummary: {
               ...editedProfile.professionalSummary,
-              industries: updatedData
+              industries: updatedIndustries
             }
           });
           setTempIndustry('');
           
+          setEditedProfile(prev => ({
+            ...prev,
+            professionalSummary: {
+              ...prev.professionalSummary,
+              industries: updatedIndustries
+            }
+          }));
+          
         } else if (type === 'notableCompanies') {
           if (!tempCompany.trim()) return;
-          updatedData = [...(editedProfile.professionalSummary.notableCompanies || []), tempCompany];
+          const updatedCompanies = [...(editedProfile.professionalSummary.notableCompanies || []), tempCompany];
           
           await updateProfileData(editedProfile._id, {
             professionalSummary: {
               ...editedProfile.professionalSummary,
-              notableCompanies: updatedData
+              notableCompanies: updatedCompanies
             }
           });
           setTempCompany('');
+          
+          setEditedProfile(prev => ({
+            ...prev,
+            professionalSummary: {
+              ...prev.professionalSummary,
+              notableCompanies: updatedCompanies
+            }
+          }));
           
         } else {
           // Handle skills (technical, professional, soft)
           if (!tempSkill[type]?.trim()) return;
           
-          const currentSkills = editedProfile.skills[type] || [];
-          updatedData = [...currentSkills, tempSkill[type]];
+          const currentSkills = editedProfile.skills?.[type] || [];
+          const newSkill = {
+            skill: tempSkill[type],
+            level: 1, // Default level
+            details: '' // Optional details
+          };
+          const updatedSkills = [...currentSkills, newSkill];
           
-          const updatedSkills = {
+          const newSkills = {
             ...editedProfile.skills,
-            [type]: updatedData
+            [type]: updatedSkills
           };
           
-          await updateSkills(editedProfile._id, updatedSkills);
+          // First update the backend
+          await updateSkills(editedProfile._id, newSkills);
+          
+          // Then update local state
+          setEditedProfile(prev => ({
+            ...prev,
+            skills: {
+              ...prev.skills,
+              [type]: updatedSkills
+            }
+          }));
+          
+          // Clear the input
           setTempSkill(prev => ({ ...prev, [type]: '' }));
         }
-
-        // Update local state after successful API call
-        setEditedProfile(prev => ({
-          ...prev,
-          ...(type === 'industries' || type === 'notableCompanies'
-            ? {
-                professionalSummary: {
-                  ...prev.professionalSummary,
-                  [type]: updatedData
-                }
-              }
-            : {
-                skills: {
-                  ...prev.skills,
-                  [type]: updatedData
-                }
-              })
-        }));
       } catch (error) {
         console.error(`Error adding ${type}:`, error);
+        alert(`Failed to add ${type}: ${error.message}`);
       }
     };
 
     const handleRemove = async (index) => {
       try {
-        let updatedData;
-        
         if (type === 'industries' || type === 'notableCompanies') {
-          updatedData = editedProfile.professionalSummary[type].filter((_, i) => i !== index);
+          const updatedData = editedProfile.professionalSummary[type].filter((_, i) => i !== index);
           await updateProfileData(editedProfile._id, {
             professionalSummary: {
               ...editedProfile.professionalSummary,
               [type]: updatedData
             }
           });
-        } else {
-          const currentSkills = editedProfile.skills[type] || [];
-          updatedData = currentSkills.filter((_, i) => i !== index);
           
-          const updatedSkills = {
+          setEditedProfile(prev => ({
+            ...prev,
+            professionalSummary: {
+              ...prev.professionalSummary,
+              [type]: updatedData
+            }
+          }));
+        } else {
+          const currentSkills = editedProfile.skills?.[type] || [];
+          const updatedSkills = currentSkills.filter((_, i) => i !== index);
+          
+          const newSkills = {
             ...editedProfile.skills,
-            [type]: updatedData
+            [type]: updatedSkills
           };
           
-          await updateSkills(editedProfile._id, updatedSkills);
+          // First update the backend
+          await updateSkills(editedProfile._id, newSkills);
+          
+          // Then update local state
+          setEditedProfile(prev => ({
+            ...prev,
+            skills: {
+              ...prev.skills,
+              [type]: updatedSkills
+            }
+          }));
         }
-
-        // Update local state after successful API call
-        setEditedProfile(prev => ({
-          ...prev,
-          ...(type === 'industries' || type === 'notableCompanies'
-            ? {
-                professionalSummary: {
-                  ...prev.professionalSummary,
-                  [type]: updatedData
-                }
-              }
-            : {
-                skills: {
-                  ...prev.skills,
-                  [type]: updatedData
-                }
-              })
-        }));
       } catch (error) {
         console.error(`Error removing ${type}:`, error);
+        alert(`Failed to remove ${type}: ${error.message}`);
       }
     };
 
