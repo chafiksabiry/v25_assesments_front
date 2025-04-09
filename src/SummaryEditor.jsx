@@ -577,10 +577,13 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
       try {
         const dateObj = new Date(date);
         if (isNaN(dateObj.getTime())) return date;
-        return new Intl.DateTimeFormat('en-US', { 
-          month: 'short',
-          year: 'numeric'
-        }).format(dateObj);
+        
+        // Format as dd/mm/yyyy
+        const day = dateObj.getDate().toString().padStart(2, '0');
+        const month = (dateObj.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
+        const year = dateObj.getFullYear();
+        
+        return `${day}/${month}/${year}`;
       } catch (error) {
         console.error('Error formatting date:', error);
         return date;
