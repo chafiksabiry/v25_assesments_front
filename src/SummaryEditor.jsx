@@ -36,6 +36,11 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     isPresent: false
   });
   const [showNewExperienceForm, setShowNewExperienceForm] = useState(false);
+  const [tempSkill, setTempSkill] = useState({
+    technical: '',
+    professional: '',
+    soft: ''
+  });
 
   const proficiencyLevels = [
     { value: 'A1', label: 'A1 - Beginner', description: 'Can understand and use basic phrases, introduce themselves' },
@@ -549,28 +554,193 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
     );
   };
 
-  const renderSkillSection = (title, skills) => (
-    <div className="mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-        {title === 'Technical Skills' && '🔧'}
-        {title === 'Professional Skills' && '💼'}
-        {title === 'Soft Skills' && '🤝'}
-        {title === 'Notable Companies' && '🌟'}
-        {title === 'Industries' && '🏭'}
-        <span className="ml-2">{title}</span>
-      </h3>
-      <div className="flex flex-wrap gap-2">
-        {Array.isArray(skills) && skills.map((skill, index) => (
-          <span
-            key={index}
-            className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 rounded-full text-sm font-medium border border-gray-200 hover:shadow-md transition-shadow duration-200"
-          >
-            {typeof skill === 'string' ? skill : `${skill.skill} (${skill.level}%)`}
-          </span>
-        ))}
+  const renderSkillSection = (title, skills, type) => {
+    const handleAdd = async () => {
+      try {
+        let updatedData;
+        let tempValue = '';
+
+        if (type === 'industries') {
+          if (!tempIndustry.trim()) return;
+          updatedData = [...(editedProfile.professionalSummary.industries || []), tempIndustry];
+          
+          await updateProfileData(editedProfile._id, {
+            professionalSummary: {
+              ...editedProfile.professionalSummary,
+              industries: updatedData
+            }
+          });
+          setTempIndustry('');
+          
+        } else if (type === 'notableCompanies') {
+          if (!tempCompany.trim()) return;
+          updatedData = [...(editedProfile.professionalSummary.notableCompanies || []), tempCompany];
+          
+          await updateProfileData(editedProfile._id, {
+            professionalSummary: {
+              ...editedProfile.professionalSummary,
+              notableCompanies: updatedData
+            }
+          });
+          setTempCompany('');
+          
+        } else {
+          // Handle skills (technical, professional, soft)
+          if (!tempSkill[type]?.trim()) return;
+          
+          const currentSkills = editedProfile.skills[type] || [];
+          updatedData = [...currentSkills, tempSkill[type]];
+          
+          const updatedSkills = {
+            ...editedProfile.skills,
+            [type]: updatedData
+          };
+          
+          await updateSkills(editedProfile._id, updatedSkills);
+          setTempSkill(prev => ({ ...prev, [type]: '' }));
+        }
+
+        // Update local state after successful API call
+        setEditedProfile(prev => ({
+          ...prev,
+          ...(type === 'industries' || type === 'notableCompanies'
+            ? {
+                professionalSummary: {
+                  ...prev.professionalSummary,
+                  [type]: updatedData
+                }
+              }
+            : {
+                skills: {
+                  ...prev.skills,
+                  [type]: updatedData
+                }
+              })
+        }));
+      } catch (error) {
+        console.error(`Error adding ${type}:`, error);
+      }
+    };
+
+    const handleRemove = async (index) => {
+      try {
+        let updatedData;
+        
+        if (type === 'industries' || type === 'notableCompanies') {
+          updatedData = editedProfile.professionalSummary[type].filter((_, i) => i !== index);
+          await updateProfileData(editedProfile._id, {
+            professionalSummary: {
+              ...editedProfile.professionalSummary,
+              [type]: updatedData
+            }
+          });
+        } else {
+          const currentSkills = editedProfile.skills[type] || [];
+          updatedData = currentSkills.filter((_, i) => i !== index);
+          
+          const updatedSkills = {
+            ...editedProfile.skills,
+            [type]: updatedData
+          };
+          
+          await updateSkills(editedProfile._id, updatedSkills);
+        }
+
+        // Update local state after successful API call
+        setEditedProfile(prev => ({
+          ...prev,
+          ...(type === 'industries' || type === 'notableCompanies'
+            ? {
+                professionalSummary: {
+                  ...prev.professionalSummary,
+                  [type]: updatedData
+                }
+              }
+            : {
+                skills: {
+                  ...prev.skills,
+                  [type]: updatedData
+                }
+              })
+        }));
+      } catch (error) {
+        console.error(`Error removing ${type}:`, error);
+      }
+    };
+
+    const getTempValue = () => {
+      if (type === 'industries') return tempIndustry;
+      if (type === 'notableCompanies') return tempCompany;
+      return tempSkill[type] || '';
+    };
+
+    const handleTempChange = (value) => {
+      if (type === 'industries') setTempIndustry(value);
+      else if (type === 'notableCompanies') setTempCompany(value);
+      else setTempSkill(prev => ({ ...prev, [type]: value }));
+    };
+
+    return (
+      <div className="mb-6 p-4 bg-white rounded-xl shadow-sm border border-gray-100">
+        <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+          {title === 'Technical Skills' && '🔧'}
+          {title === 'Professional Skills' && '💼'}
+          {title === 'Soft Skills' && '🤝'}
+          {title === 'Notable Companies' && '🌟'}
+          {title === 'Industries' && '🏭'}
+          <span className="ml-2">{title}</span>
+        </h3>
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            {Array.isArray(skills) && skills.map((skill, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 rounded-full text-sm font-medium border border-gray-200 hover:shadow-md transition-shadow duration-200 group"
+              >
+                <span>{typeof skill === 'string' ? skill : skill.skill}</span>
+                {editingProfile && (
+                  <button
+                    onClick={() => handleRemove(index)}
+                    className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+          {editingProfile && (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={getTempValue()}
+                onChange={(e) => handleTempChange(e.target.value)}
+                className="flex-1 p-2 border rounded-md bg-white/50"
+                placeholder={`Add ${title.toLowerCase()}`}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAdd();
+                  }
+                }}
+              />
+              <button
+                onClick={handleAdd}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderExperienceSection = () => {
     const formatDate = (date) => {
@@ -1213,11 +1383,11 @@ function SummaryEditor({ profileData, generatedSummary, setGeneratedSummary, onP
 
           {/* Skills Sections */}
           <div className="space-y-6">
-            {renderSkillSection('Technical Skills', editedProfile.skills.technical)}
-            {renderSkillSection('Professional Skills', editedProfile.skills.professional)}
-            {renderSkillSection('Soft Skills', editedProfile.skills.soft)}
-            {renderSkillSection('Industries', editedProfile.professionalSummary.industries)}
-            {renderSkillSection('Notable Companies', editedProfile.professionalSummary.notableCompanies)}
+            {renderSkillSection('Technical Skills', editedProfile.skills.technical, 'technical')}
+            {renderSkillSection('Professional Skills', editedProfile.skills.professional, 'professional')}
+            {renderSkillSection('Soft Skills', editedProfile.skills.soft, 'soft')}
+            {renderSkillSection('Industries', editedProfile.professionalSummary.industries, 'industries')}
+            {renderSkillSection('Notable Companies', editedProfile.professionalSummary.notableCompanies, 'notableCompanies')}
           </div>
 
           {/* Summary Section */}
