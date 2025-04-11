@@ -316,7 +316,26 @@ function ContactCenterAssessment({ saveResults, onComplete, profileData }) {
     // Save the current skill assessment before moving to next
     if (feedback) {
       try {
-        await saveResults(feedback);
+        // Format the assessment data according to the backend schema
+        const assessmentData = {
+          category: currentCategory.name,
+          skill: currentCategory.skills[currentSkill].name,
+          proficiency: mapScoreToProficiency(feedback.score),
+          assessmentResults: {
+            score: feedback.score,
+            strengths: feedback.strengths,
+            improvements: feedback.improvements,
+            feedback: feedback.feedback,
+            tips: feedback.tips,
+            keyMetrics: {
+              professionalism: feedback.keyMetrics.professionalism,
+              effectiveness: feedback.keyMetrics.effectiveness,
+              customerFocus: feedback.keyMetrics.customerFocus
+            },
+            completedAt: new Date().toISOString()
+          }
+        };
+        await saveResults(assessmentData);
       } catch (error) {
         console.error('Error saving assessment:', error);
         setSavingError('Failed to save assessment results. Please try again.');
@@ -789,6 +808,47 @@ function ContactCenterAssessment({ saveResults, onComplete, profileData }) {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Retake Assessment Button */}
+      <div className="mt-6 flex justify-center">
+        <button
+          onClick={async () => {
+            // Save current results before retaking
+            try {
+              const assessmentData = {
+                category: currentCategory.name,
+                skill: currentCategory.skills[currentSkill].name,
+                proficiency: mapScoreToProficiency(feedback.score),
+                assessmentResults: {
+                  score: feedback.score,
+                  strengths: feedback.strengths,
+                  improvements: feedback.improvements,
+                  feedback: feedback.feedback,
+                  tips: feedback.tips,
+                  keyMetrics: {
+                    professionalism: feedback.keyMetrics.professionalism,
+                    effectiveness: feedback.keyMetrics.effectiveness,
+                    customerFocus: feedback.keyMetrics.customerFocus
+                  },
+                  completedAt: new Date().toISOString()
+                }
+              };
+              await saveResults(assessmentData);
+              // Only clear the state after successful save
+              setFeedback(null);
+              setResponse('');
+              setAudioBlob(null);
+              setAnalyzing(false);
+            } catch (error) {
+              console.error('Error saving assessment:', error);
+              setSavingError('Failed to save assessment results. Please try again.');
+            }
+          }}
+          className="px-6 py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 flex items-center gap-2"
+        >
+          Retake Assessment
+        </button>
       </div>
     </div>
   );
