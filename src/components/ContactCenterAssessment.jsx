@@ -182,9 +182,9 @@ function ContactCenterAssessment({ saveResults, onComplete, profileData }) {
               "feedback": "string",
               "tips": ["string"],
               "keyMetrics": {
-                "professionalism": number (1-10),
-                "effectiveness": number (1-10),
-                "customerFocus": number (1-10)
+                "professionalism": number (1-100),
+                "effectiveness": number (1-100),
+                "customerFocus": number (1-100)
               }
             }`
           },
@@ -537,7 +537,7 @@ function ContactCenterAssessment({ saveResults, onComplete, profileData }) {
                             {Object.entries(skillScore.keyMetrics).map(([metric, score]) => (
                               <div key={metric} className="flex-1">
                                 <div className="text-xs text-gray-500 capitalize">{metric}</div>
-                                <div className="font-medium text-blue-600">{score}/10</div>
+                                <div className="font-medium text-blue-600">{score}/100</div>
                               </div>
                             ))}
                           </div>
@@ -719,11 +719,11 @@ function ContactCenterAssessment({ saveResults, onComplete, profileData }) {
                     {Object.entries(feedback.keyMetrics).map(([metric, score]) => (
                       <div key={metric} className="bg-white p-3 rounded-lg">
                         <div className="text-sm text-gray-500 capitalize mb-1">{metric}</div>
-                        <div className="text-lg font-semibold text-blue-600">{score}/10</div>
+                        <div className="text-lg font-semibold text-blue-600">{score}/100</div>
                         <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                            style={{ width: `${score * 10}%` }}
+                            style={{ width: `${score}%` }}
                           />
                         </div>
                       </div>
