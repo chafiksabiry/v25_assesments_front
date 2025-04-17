@@ -1,9 +1,14 @@
-import ISO6391 from 'iso-639-1';
-import { openai } from '../config/openai';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+  dangerouslyAllowBrowser: true
+});
 
 // Base English passage that will be used as reference for translations
 const REFERENCE_PASSAGE = {
   text: `The digital revolution has transformed how we live and work. In today's interconnected world, technology plays a pivotal role in shaping our daily experiences. From artificial intelligence to renewable energy, innovations continue to drive progress and create new opportunities. As we navigate these changes, it's crucial to understand both the benefits and challenges of our increasingly digital society.`,
+  title: "The Digital Revolution",
   estimatedDuration: 45,
   difficulty: "intermediate",
   code: "en"
@@ -44,8 +49,8 @@ const getLanguageCodeFromAI = async (language) => {
 
     const languageCode = response.choices[0].message.content.trim().toLowerCase();
     
-    // Validate the returned code
-    if (ISO6391.validate(languageCode)) {
+    // Simple validation - check if it's exactly 2 characters
+    if (languageCode.length === 2 && /^[a-z]{2}$/.test(languageCode)) {
       return languageCode;
     }
     
@@ -64,18 +69,12 @@ const getLanguageCode = async (language) => {
   
   const normalizedInput = language.toLowerCase().trim();
   
-  // First try direct ISO validation
-  if (ISO6391.validate(normalizedInput)) {
+  // First check if it's already a 2-letter code
+  if (normalizedInput.length === 2 && /^[a-z]{2}$/.test(normalizedInput)) {
     return normalizedInput;
   }
   
-  // Then try getting code from language name
-  const codeFromName = ISO6391.getCode(normalizedInput);
-  if (codeFromName) {
-    return codeFromName;
-  }
-  
-  // If standard methods fail, use AI to determine the language code
+  // Try to get code from name using AI
   return await getLanguageCodeFromAI(language);
 };
 
@@ -84,33 +83,30 @@ const getLanguageCode = async (language) => {
  */
 const translatePassage = async (targetLanguageCode) => {
   try {
-    const targetLanguageName = ISO6391.getName(targetLanguageCode);
-    
-    if (!targetLanguageName) {
-      throw new Error(`Unsupported language code: ${targetLanguageCode}`);
-    }
-
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: `You are a professional translator. Translate the following text to ${targetLanguageName} (${targetLanguageCode}). 
-          Maintain the same tone, formality, and meaning. Return ONLY the translated text, nothing else.`
+          content: `You are a professional translator. Translate the following text to the language with ISO code ${targetLanguageCode}. 
+          Also provide an appropriate title for the passage in the target language.
+          Format the response as JSON: {"text": "translated text", "title": "translated title"}`
         },
         {
           role: "user",
-          content: REFERENCE_PASSAGE.text
+          content: `Text to translate: "${REFERENCE_PASSAGE.text}"\nOriginal title: "${REFERENCE_PASSAGE.title}"`
         }
       ],
-      temperature: 0.3
+      temperature: 0.3,
+      response_format: { type: "json_object" }
     });
 
-    const translatedText = response.choices[0].message.content.trim();
+    const translationResult = JSON.parse(response.choices[0].message.content);
     
     // Create new passage entry
     const newPassage = {
-      text: translatedText,
+      text: translationResult.text,
+      title: translationResult.title,
       estimatedDuration: REFERENCE_PASSAGE.estimatedDuration,
       difficulty: REFERENCE_PASSAGE.difficulty,
       code: targetLanguageCode
@@ -155,22 +151,13 @@ export const getPassage = async (language) => {
 /**
  * Check if passage exists for language
  */
-export const hasPassage = async (language) => {
-  try {
-    const langCode = await getLanguageCode(language);
-    return langCode ? passageCache.has(langCode) : false;
-  } catch (error) {
-    return false;
-  }
+export const hasPassage = (langCode) => {
+  return passageCache.has(langCode);
 };
 
 /**
  * Get available language codes
  */
 export const getAvailableLanguages = () => {
-  return Array.from(passageCache.keys()).map(code => ({
-    code,
-    name: ISO6391.getName(code),
-    nativeName: ISO6391.getNativeName(code)
-  }));
+  return Array.from(passageCache.keys());
 }; 
