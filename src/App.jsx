@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AssessmentHome from './components/AssessmentHome';
+import LanguageAssessmentPage from './pages/LanguageAssessmentPage';
 import { AssessmentProvider } from './context/AssessmentContext';
 
 function App() {
@@ -8,10 +8,14 @@ function App() {
     <AssessmentProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<AssessmentHome />} />
-          <Route path="/assessment/language/:languageId" element={<AssessmentHome />} />
-          <Route path="/assessment/contact-center/:skillId" element={<AssessmentHome />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Route for any language name */}
+          <Route path="/languages/:language" element={<LanguageAssessmentPage />} />
+          
+          {/* Default route - redirect to English */}
+          <Route path="/" element={<Navigate to="/languages/English" replace />} />
+          
+          {/* Redirect any other routes to default page */}
+          <Route path="*" element={<Navigate to="/languages/English" replace />} />
         </Routes>
       </Router>
     </AssessmentProvider>

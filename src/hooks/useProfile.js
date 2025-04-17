@@ -106,14 +106,17 @@ export const useProfile = (profileId) => {
   const updateLanguageAssessment = async (id, language, proficiency, results) => {
     try {
       setLoading(true);
+      
       const updatedProfile = await profileApi.updateLanguageAssessment(id, {
         language,
         proficiency,
         results
       });
-      console.log('updatedProfile after api call : ', updatedProfile);
+      
+      console.log("Updated profile after language assessment:", updatedProfile);
       setProfile(updatedProfile);
       setError(null);
+      
       return updatedProfile;
     } catch (err) {
       setError(err.message);
@@ -184,3 +187,5 @@ export const useProfile = (profileId) => {
     addContactCenterAssessment
   };
 };
+
+export default useProfile;

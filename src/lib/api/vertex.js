@@ -1,29 +1,33 @@
 import api, { apiMultipart } from './client';
 
-
-export const analyzeRecordingVertex = async (analyzeData) => {
+/**
+ * Upload a recording for processing
+ * @param {FormData} formData - Form data containing the audio file
+ * @returns {Promise<{data: {fileUri: string}}>} - The URL of the uploaded recording
+ */
+export const uploadRecording = async (formData) => {
     try {
-        const responseData = await api.post('/vertex/language/evaluate', analyzeData);
-        return responseData.data.candidates[0].content.parts[0].text;
+        const { data } = await apiMultipart.post('/audio/upload', formData);
+        return { data };
     } catch (error) {
-        throw error.response?.data || error;
+        console.error('Error uploading recording:', error);
+        throw error;
     }
 };
 
 /**
- * Upload a recording for processing
- * @param {Blob} audioBlob - The audio recording blob
- * @returns {Promise<{url: string}>} - The URL of the uploaded recording
+ * Analyze recording using Vertex AI
+ * @param {Object} data - The analysis parameters
+ * @param {string} data.fileUri - The URI of the uploaded file
+ * @param {string} data.textToCompare - The text to compare the audio against
+ * @returns {Promise<Object>} - The analysis results
  */
-export const uploadRecording = async (audioBlob) => {
+export const analyzeRecordingVertex = async (data) => {
     try {
-        const formData = new FormData();
-        formData.append('audio', audioBlob, 'recording.webm');
-        
-        const { data } = await apiMultipart.post('/audio/upload', formData);
-        return data;
+        const { data: response } = await apiMultipart.post('/vertex/analyze-speech', data);
+        return response;
     } catch (error) {
-        console.error('Error uploading recording:', error);
+        console.error('Error analyzing recording with Vertex:', error);
         throw error;
     }
 };
