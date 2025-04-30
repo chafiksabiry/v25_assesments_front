@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { getAgentId } from '../utils/authUtils';
 
 const AssessmentContext = createContext();
 
@@ -106,37 +107,83 @@ export const AssessmentProvider = ({ children }) => {
   ];
   
   // Save a language assessment result
-  const saveLanguageAssessment = async (languageId, results) => {
-    if (!userId) {
-      console.error('Cannot save assessment: No user ID provided');
-      return;
+  const saveLanguageAssessment = async (language, proficiency, results) => {
+    // Get the agent ID from localStorage/auth utils - this is critical for saving
+    const agentId = getAgentId();
+    
+    if (!agentId) {
+      console.error('Cannot save assessment: No agent ID provided');
+      setError('Missing agent ID - cannot save assessment');
+      return false;
     }
     
     setLoading(true);
     setError(null);
     
     try {
+      // Update local state first (this will work even if API call fails)
       setAssessmentResults(prev => ({
         ...prev,
         languages: {
           ...prev.languages,
-          [languageId]: results
+          [language]: results
         }
       }));
       
-      // Call API to save results to backend
+      // Attempt to save to backend API if URL is configured
       if (import.meta.env.VITE_API_URL) {
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/assessments/language`, {
-          userId,
-          languageId,
-          results
-        });
-        
-        console.log('Assessment saved to backend:', response.data);
+        try {
+          // Check if we're in demo/development mode
+          const isDemoMode = import.meta.env.VITE_RUN_MODE === 'standalone' || 
+                           !import.meta.env.PROD;
+                           
+          // If in demo mode and the endpoint might not exist, log instead of throwing error
+          if (isDemoMode) {
+            console.log('Demo mode: Would save assessment data to backend:', {
+              agentId,
+              language,
+              proficiency,
+              results
+            });
+            
+            // Try the API call anyway, but don't fail if it's not available
+            try {
+              // Use the correct endpoint: /:id/language-assessment
+              const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/language-assessment`, {
+                language,
+                proficiency,
+                results
+              });
+              console.log('Assessment saved to backend:', response.data);
+            } catch (apiError) {
+              console.warn('API endpoint not available (expected in demo mode):', apiError.message);
+              // Continue execution - we've already updated local state
+            }
+          } else {
+            // In production mode, make the API call and handle errors normally
+            // Use the correct endpoint: /:id/language-assessment
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/${agentId}/language-assessment`, {
+              language,
+              proficiency,
+              results
+            });
+            console.log('Assessment saved to backend:', response.data);
+          }
+        } catch (apiError) {
+          console.error('Error communicating with backend API:', apiError);
+          // Show error but don't prevent continuing since local state is updated
+          setError('Warning: Results saved locally but could not be sent to server');
+        }
+      } else {
+        console.warn('No API URL configured. Assessment results saved only locally.');
       }
+      
+      // Show success message or notification here if needed
+      return true; // Indicate success
     } catch (err) {
       console.error('Error saving language assessment:', err);
       setError('Failed to save assessment results');
+      return false; // Indicate failure
     } finally {
       setLoading(false);
     }
@@ -144,15 +191,20 @@ export const AssessmentProvider = ({ children }) => {
   
   // Save a contact center skill assessment result
   const saveContactCenterAssessment = async (skillId, category, results) => {
-    if (!userId) {
-      console.error('Cannot save assessment: No user ID provided');
-      return;
+    // Get the agent ID from localStorage/auth utils
+    const agentId = getAgentId();
+    
+    if (!agentId) {
+      console.error('Cannot save assessment: No agent ID provided');
+      setError('Missing agent ID - cannot save assessment');
+      return false;
     }
     
     setLoading(true);
     setError(null);
     
     try {
+      // Update local state first
       setAssessmentResults(prev => ({
         ...prev,
         contactCenter: {
@@ -166,18 +218,30 @@ export const AssessmentProvider = ({ children }) => {
       
       // Call API to save results to backend
       if (import.meta.env.VITE_API_URL) {
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/assessments/contact-center`, {
-          userId,
-          skillId,
-          category,
-          results
-        });
-        
-        console.log('Contact center assessment saved to backend:', response.data);
+        try {
+          // Use the correct endpoint from routes: /:id/contact-center-assessment
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/${agentId}/contact-center-assessment`, {
+            skillId,
+            category,
+            results
+          });
+          
+          console.log('Contact center assessment saved to backend:', response.data);
+          return true;
+        } catch (apiError) {
+          console.error('Error communicating with backend API:', apiError);
+          setError('Warning: Results saved locally but could not be sent to server');
+          // Continue since we've already updated local state
+          return true;
+        }
+      } else {
+        console.warn('No API URL configured. Assessment results saved only locally.');
+        return true;
       }
     } catch (err) {
       console.error('Error saving contact center assessment:', err);
       setError('Failed to save assessment results');
+      return false;
     } finally {
       setLoading(false);
     }

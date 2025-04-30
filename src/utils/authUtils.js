@@ -11,35 +11,53 @@ export const initializeAuth = () => {
   const storedUserId = localStorage.getItem('userId');
   const storedToken = localStorage.getItem('token');
   const storedReturnUrl = localStorage.getItem('returnUrl');
+  const storedAgentId = localStorage.getItem('agentId');
   
   // Get auth from URL params
   const params = new URLSearchParams(window.location.search);
   const urlUserId = params.get('userId');
   const urlToken = params.get('token');
   const urlReturnUrl = params.get('returnUrl');
+  const urlAgentId = params.get('agentId');
   
   // Determine final values (URL params take precedence)
   const userId = urlUserId || storedUserId || import.meta.env.VITE_STANDALONE_USER_ID;
   const token = urlToken || storedToken || import.meta.env.VITE_STANDALONE_TOKEN;
   const returnUrl = urlReturnUrl || storedReturnUrl || '/';
+  const agentId = urlAgentId || storedAgentId || import.meta.env.VITE_STANDALONE_AGENT_ID; // Default to userId if agentId not specified
   
   // Store in localStorage for persistence
   if (userId) localStorage.setItem('userId', userId);
   if (token) localStorage.setItem('token', token);
   if (returnUrl) localStorage.setItem('returnUrl', returnUrl);
+  if (agentId) localStorage.setItem('agentId', agentId);
   
   // Also remove from URL if they were there (cleaner URLs)
-  if (urlUserId || urlToken || urlReturnUrl) {
+  if (urlUserId || urlToken || urlReturnUrl || urlAgentId) {
     const newParams = new URLSearchParams(window.location.search);
     if (urlUserId) newParams.delete('userId');
     if (urlToken) newParams.delete('token');
     if (urlReturnUrl) newParams.delete('returnUrl');
+    if (urlAgentId) newParams.delete('agentId');
     
     const newUrl = `${window.location.pathname}${newParams.toString() ? `?${newParams.toString()}` : ''}`;
     window.history.replaceState({}, '', newUrl);
   }
   
-  return { userId, token, returnUrl };
+  return { userId, token, returnUrl, agentId };
+};
+
+/**
+ * Get the agent ID from storage
+ * This is needed for saving assessment results to the backend
+ */
+export const getAgentId = () => {
+  const agentId = localStorage.getItem('agentId');
+  const userId = localStorage.getItem('userId');
+  
+  // If no specific agentId is set, fall back to userId
+  // (in many cases they might be the same)
+  return agentId || userId || import.meta.env.VITE_STANDALONE_USER_ID;
 };
 
 /**

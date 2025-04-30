@@ -1,12 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import LanguageAssessment from '../components/LanguageAssessment';
 import { useAssessment } from '../context/AssessmentContext';
 import { isAuthenticated, returnToParentApp, getLanguageIsoCode } from '../utils/authUtils';
+import Notification from '../components/Notification';
 
 function LanguageAssessmentPage() {
   const { language } = useParams();
   const { setCurrentAssessmentType, saveLanguageAssessment, setUserId } = useAssessment();
+  const [notification, setNotification] = useState(null);
   
   // Set assessment type and check authentication on mount
   useEffect(() => {
@@ -23,14 +25,39 @@ function LanguageAssessmentPage() {
     console.log(`Language: ${language}, ISO code: ${isoCode || 'unknown (will be determined by API)'}`);
   }, [setCurrentAssessmentType, language]);
   
-  const handleComplete = (results) => {
+  // Helper function to convert score to CEFR level - copied from LanguageAssessment component
+  const mapScoreToCEFR = (score) => {
+    if (score >= 95) return 'C2';
+    if (score >= 80) return 'C1';
+    if (score >= 65) return 'B2';
+    if (score >= 50) return 'B1';
+    if (score >= 35) return 'A2';
+    return 'A1';
+  };
+  
+  const handleComplete = async (results) => {
     console.log('Assessment completed:', results);
     
-    // Get the ISO code from results
-    const langCode = results.language_code || getLanguageIsoCode(language) || 'unknown';
+    // Get the language from the URL parameter
+    const languageParam = decodedLanguage;
     
-    // Save results to the assessment context
-    saveLanguageAssessment(langCode, results);
+    // Get the CEFR level from the results for proficiency
+    const proficiency = mapScoreToCEFR(results.overall.score);
+    
+    // Save results to the assessment context with the required parameters
+    const success = await saveLanguageAssessment(languageParam, proficiency, results);
+    
+    if (success) {
+      setNotification({
+        message: 'Assessment results saved successfully!',
+        type: 'success'
+      });
+    } else {
+      setNotification({
+        message: 'Results saved locally but could not be sent to server',
+        type: 'warning'
+      });
+    }
     
     // Optional: navigate or show completion screen
   };
@@ -70,6 +97,15 @@ function LanguageAssessmentPage() {
           </div>
         </div>
       </div>
+      
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          duration={5000}
+          onClose={() => setNotification(null)}
+        />
+      )}
     </div>
   );
 }
