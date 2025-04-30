@@ -126,7 +126,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       setResults(assessmentResults);
       console.log('previousScores', previousScores);
       setPreviousScores(prev => [...prev, assessmentResults.overall.score]);
-      
+
       // Increment attempts
       setAttempts(prev => prev + 1);
     } catch (error) {
@@ -163,25 +163,89 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       };
       
       // Use the updated analyzeRecordingVertex function
-      const responseText = await analyzeRecordingVertex(analysisData);
-      console.log("Vertex response text:", responseText);
+      const vertexResponse = await analyzeRecordingVertex(analysisData);
+      console.log("Vertex response:", vertexResponse);
       
-      // Parse the response text which should be a JSON string
-      let assessmentResults;
-      try {
-        assessmentResults = JSON.parse(responseText.candidates[0].content.parts[0].text);
-        // Add language code to results
-        assessmentResults.language_code = languageCode;
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        assessmentResults = {
-          pronunciation: { score: 0, feedback: "Error parsing results" },
-          fluency: { score: 0, feedback: "Error parsing results" },
-          comprehension: { score: 0, feedback: "Error parsing results" },
-          vocabulary: { score: 0, feedback: "Error parsing results" },
-          overall: { score: 0, feedback: "Error analyzing recording" },
-          language_code: languageCode
-        };
+      // Map the Vertex API response schema to our frontend schema
+      const assessmentResults = {
+        pronunciation: { 
+          score: 0, 
+          feedback: "No pronunciation assessment available" 
+        },
+        fluency: { 
+          score: 0, 
+          feedback: "No fluency assessment available" 
+        },
+        comprehension: { 
+          score: 0, 
+          feedback: "No comprehension assessment available" 
+        },
+        vocabulary: { 
+          score: 0, 
+          feedback: "No vocabulary assessment available" 
+        },
+        overall: { 
+          score: 0, 
+          feedback: "Assessment not available" 
+        },
+        language_code: languageCode,
+        languageOrTextMismatch: false
+      };
+
+      // Update with actual values from Vertex response
+      if (vertexResponse) {
+        // Handle language or text mismatch
+        if (vertexResponse.languageOrTextMismatch === true) {
+          assessmentResults.languageOrTextMismatch = true;
+          assessmentResults.overall.feedback = vertexResponse.overall?.areasForImprovement || 
+            "The language spoken does not match the expected language or the text was not read correctly.";
+        }
+        
+        // Map completeness to pronunciation (closest equivalent)
+        if (vertexResponse.completeness) {
+          assessmentResults.pronunciation = {
+            score: Math.round(vertexResponse.completeness.score) || 0,
+            feedback: vertexResponse.completeness.feedback || "No pronunciation assessment available"
+          };
+        }
+        
+        // Map fluency directly
+        if (vertexResponse.fluency) {
+          assessmentResults.fluency = {
+            score: Math.round(vertexResponse.fluency.score) || 0,
+            feedback: vertexResponse.fluency.feedback || "No fluency assessment available"
+          };
+        }
+        
+        // Map proficiency to both comprehension and vocabulary
+        if (vertexResponse.proficiency) {
+          const proficiencyScore = Math.round(vertexResponse.proficiency.score) || 0;
+          const feedback = vertexResponse.proficiency.feedback || "No assessment available";
+          
+          assessmentResults.comprehension = {
+            score: proficiencyScore,
+            feedback: feedback
+          };
+          
+          assessmentResults.vocabulary = {
+            score: proficiencyScore,
+            feedback: feedback
+          };
+        }
+        
+        // Map overall score
+        if (vertexResponse.overall) {
+          // Get the overall score, already on scale of 0-100
+          const overallScore = vertexResponse.overall.score !== undefined ? 
+            Math.round(vertexResponse.overall.score) : 0;
+          
+          assessmentResults.overall = {
+            score: overallScore,
+            feedback: vertexResponse.overall.areasForImprovement || 
+                     vertexResponse.overall.strengths || 
+                     "Overall assessment based on your recording"
+          };
+        }
       }
       
       setResults(assessmentResults);
@@ -190,14 +254,15 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       // Increment attempts
       setAttempts(prev => prev + 1);
     } catch (error) {
-      console.error('Error analyzing recording:', error);
-      alert('Error analyzing recording. Please try again.');
+      console.error('Error analyzing recording with Vertex API:', error);
       
-      // Fallback to OpenAI if vertex fails
+      // Fallback to OpenAI if Vertex API fails
       try {
+        console.log('Attempting to fallback to OpenAI analysis...');
         await analyzeRecording();
       } catch (fallbackError) {
         console.error('Fallback analysis also failed:', fallbackError);
+        alert('Error analyzing recording. Please try again.');
       }
     } finally {
       setAnalyzing(false);
@@ -215,17 +280,17 @@ function LanguageAssessment({ language, onComplete, onExit }) {
 
   const showScoreComparison = () => {
     if (previousScores.length <= 1) return null;
-    
+
     const lastScore = previousScores[previousScores.length - 1];
     const previousScore = previousScores[previousScores.length - 2];
     const difference = lastScore - previousScore;
     const isImprovement = difference > 0;
-    
+
     return (
       <div className={`mt-4 p-3 rounded-lg ${isImprovement ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}`}>
         <p className="font-medium">
-          {isImprovement 
-            ? `Improvement: +${difference.toFixed(1)} points from your previous attempt!` 
+          {isImprovement
+            ? `Improvement: +${difference.toFixed(1)} points from your previous attempt!`
             : `This attempt: ${difference.toFixed(1)} points difference from previous.`}
         </p>
       </div>
@@ -243,7 +308,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       onComplete(results);
     }
   };
-  
+
   const handleExit = () => {
     if (onExit) {
       onExit();
@@ -269,7 +334,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
         <h3 className="text-red-600 text-lg font-semibold mb-2">Error Loading Assessment</h3>
         <p className="text-gray-700 mb-4">{passageError}</p>
-        <button 
+        <button
           onClick={handleExit}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
@@ -300,9 +365,8 @@ function LanguageAssessment({ language, onComplete, onExit }) {
             {!audioBlob ? (
               <button
                 onClick={recording ? stopRecording : startRecording}
-                className={`px-6 py-3 rounded-full text-white font-medium flex items-center ${
-                  recording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className={`px-6 py-3 rounded-full text-white font-medium flex items-center ${recording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
                 disabled={isTranslating}
               >
                 {recording ? (
@@ -353,9 +417,9 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               </div>
             )}
           </div>
-          
+
           <div className="text-center">
-            <button 
+            <button
               onClick={handleExit}
               className="text-blue-600 hover:text-blue-800 text-sm font-medium"
             >
@@ -384,7 +448,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Pronunciation</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.pronunciation.score}/10</span>
+                <span className="font-bold text-blue-600">{results.pronunciation.score}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.pronunciation.feedback}</p>
             </div>
@@ -393,7 +457,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Fluency</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.fluency.score}/10</span>
+                <span className="font-bold text-blue-600">{results.fluency.score}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.fluency.feedback}</p>
             </div>
@@ -402,7 +466,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Comprehension</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.comprehension.score}/10</span>
+                <span className="font-bold text-blue-600">{results.comprehension.score}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.comprehension.feedback}</p>
             </div>
@@ -411,7 +475,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Vocabulary</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.vocabulary.score}/10</span>
+                <span className="font-bold text-blue-600">{results.vocabulary.score}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.vocabulary.feedback}</p>
             </div>
@@ -429,7 +493,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
             >
               Retake Assessment
             </button>
-            
+
             <div className="space-x-3">
               <button
                 onClick={handleExit}
@@ -437,7 +501,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               >
                 Exit
               </button>
-              
+
               <button
                 onClick={completeAssessment}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
