@@ -263,21 +263,8 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
         }
       });
       
-      // Save results to context
-      if (currentSkill) {
-        // Format assessment data for saving
-        const assessmentData = formatAssessmentForSaving(feedback);
-        
-        const success = await saveContactCenterAssessment(
-          currentSkill.id, 
-          currentSkill.category, 
-          assessmentData
-        );
-        
-        // Note: We're not calling onComplete automatically anymore
-        // Instead, the user will need to explicitly click a button
-        // if they want to complete the assessment
-      }
+      // Note: We're not saving results automatically anymore
+      // The user will click "Save Results" button instead
     } catch (error) {
       console.error('Error analyzing with Vertex API:', error);
       setError('Error analyzing your response. Please try again.');
@@ -330,26 +317,44 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
       const feedback = JSON.parse(analysisResponse.choices[0].message.content);
       setResults(feedback);
       
-      // Save results to context
-      if (currentSkill) {
-        // Format assessment data for saving
-        const assessmentData = formatAssessmentForSaving(feedback);
-        
-        const success = await saveContactCenterAssessment(
-          currentSkill.id, 
-          currentSkill.category, 
-          assessmentData
-        );
-        
-        // Note: We're not calling onComplete automatically anymore
-        // Instead, the user will need to explicitly click a button
-        // if they want to complete the assessment
-      }
+      // Note: We're not saving results automatically anymore
+      // The user will click "Save Results" button instead
     } catch (error) {
       console.error('Error analyzing response:', error);
       setError('Error analyzing your response. Please try again.');
     } finally {
       setAnalyzing(false);
+    }
+  };
+  
+  // Add function to save assessment results
+  const saveResults = async () => {
+    if (!results || !currentSkill) {
+      setError('No results to save');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // Format assessment data for saving
+      const assessmentData = formatAssessmentForSaving(results);
+      
+      const success = await saveContactCenterAssessment(
+        currentSkill.id, 
+        currentSkill.category, 
+        assessmentData
+      );
+      
+      if (success) {
+        // Show success message
+        setError(null); // Clear any existing errors
+        // Could add a success notification here
+      }
+    } catch (error) {
+      console.error('Error saving results:', error);
+      setError('Failed to save assessment results');
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -646,6 +651,12 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                   className="flex-1 py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   Try Another Scenario
+                </button>
+                <button
+                  onClick={saveResults}
+                  className="flex-1 py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Save Results
                 </button>
                 <button
                   onClick={handleFinishAssessment}
