@@ -3,16 +3,24 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAssessment } from '../context/AssessmentContext';
 import OpenAI from 'openai';
 import { transcribeLongAudio } from '../lib/api/speechToText';
-import { uploadRecording } from '../lib/api/vertex';
-import { analyzeContentCenterSkill } from '../lib/api/vertex';
+import { uploadRecording, analyzeContentCenterSkill } from '../lib/api/vertex';
 
 const openai = new OpenAI({
   apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true
 });
 
-function ContactCenterAssessment() {
-  const { skillId } = useParams();
+// Helper function to convert kebab-case to Title Case
+const formatSkillName = (skillId) => {
+  if (!skillId) return '';
+  return skillId
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+function ContactCenterAssessment({ skillId: propSkillId, category: propCategory, skillName: propSkillName, onComplete, onExit }) {
+  const params = useParams();
   const navigate = useNavigate();
   const { 
     contactCenterSkills, 
@@ -21,11 +29,16 @@ function ContactCenterAssessment() {
     setError
   } = useAssessment();
   
+  // Use props if provided, otherwise use from params
+  const skillId = propSkillId || params.skillId;
+  
   // Find the current skill and category
   const flatSkills = contactCenterSkills.flatMap(cat => 
     cat.skills.map(skill => ({ ...skill, category: cat.category }))
   );
-  const currentSkill = flatSkills.find(skill => skill.id === skillId);
+  const currentSkill = propSkillId ? 
+    { id: propSkillId, name: propSkillName || formatSkillName(propSkillId), category: propCategory } : 
+    flatSkills.find(skill => skill.id === skillId);
   
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -34,6 +47,7 @@ function ContactCenterAssessment() {
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
   const [loading, setLocalLoading] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
@@ -127,7 +141,155 @@ function ContactCenterAssessment() {
     setResponse(e.target.value);
   };
   
-  // Analyze the response
+  // Transcribe audio recording
+  const transcribeAudio = async () => {
+    if (!audioBlob) {
+      setError('No audio recording found to transcribe.');
+      return;
+    }
+    
+    setTranscribing(true);
+    try {
+      // Upload the audio file to Google Cloud Storage
+      const formData = new FormData();
+      const file = new File([audioBlob], `audio-${Date.now()}.opus`, { type: "audio/opus" });
+      formData.append('file', file);
+      formData.append('destinationName', `audio-${currentSkill?.name || 'skill'}-${Date.now()}.opus`);
+      
+      const uploadResponse = await uploadRecording(formData);
+      console.log('Audio upload response:', uploadResponse);
+      
+      // Initiating the transcription API endpoint
+      const data = {
+        "fileUri": uploadResponse.data.fileUri,
+        "scenario": scenario,
+        "languageCode": "en-US"
+      };
+      
+      // Here we would normally call a dedicated transcription API
+      // But for now, we'll use the analyzing API which includes transcription
+      const analysisResponse = await analyzeContentCenterSkill(data);
+      
+      // Set the transcribed text in the response field
+      if (analysisResponse.data.transcription) {
+        setResponse(analysisResponse.data.transcription);
+      } else {
+        // Fallback if transcription isn't included in the response
+        setResponse("Audio transcription not available. Please type your response or try recording again.");
+      }
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+      setError('Failed to transcribe audio. Please try again or type your response.');
+    } finally {
+      setTranscribing(false);
+    }
+  };
+  
+  // Format assessment results for saving
+  const formatAssessmentForSaving = (feedback) => {
+    return {
+      category: currentSkill.category,
+      skill: currentSkill.name || formatSkillName(currentSkill.id),
+      proficiency: mapScoreToProficiency(feedback.score),
+      assessmentResults: {
+        score: feedback.score,
+        strengths: feedback.strengths || [],
+        improvements: feedback.improvements || [],
+        feedback: feedback.feedback || '',
+        tips: feedback.tips || [],
+        keyMetrics: {
+          professionalism: feedback.keyMetrics?.professionalism || 0,
+          effectiveness: feedback.keyMetrics?.effectiveness || 0,
+          customerFocus: feedback.keyMetrics?.customerFocus || 0
+        },
+        completedAt: new Date().toISOString()
+      }
+    };
+  };
+  
+  // Analyze the response using the Vertex API
+  const analyzeWithVertex = async () => {
+    if (!audioBlob && !response.trim()) {
+      setError('Please provide a response or recording before analyzing.');
+      return;
+    }
+    
+    setAnalyzing(true);
+    try {
+      let analysisResponse;
+      
+      // If there's audio, use it for analysis
+      if (audioBlob) {
+        // Upload the audio file
+        const formData = new FormData();
+        const file = new File([audioBlob], `audio-${Date.now()}.opus`, { type: "audio/opus" });
+        formData.append('file', file);
+        formData.append('destinationName', `audio-${currentSkill?.name || 'skill'}-${Date.now()}.opus`);
+        
+        const uploadResponse = await uploadRecording(formData);
+        console.log('Audio upload response:', uploadResponse);
+        
+        // Send for vertex analysis
+        const data = {
+          fileUri: uploadResponse.data.fileUri,
+          scenarioData: scenario
+        };
+        
+        analysisResponse = await analyzeContentCenterSkill(data);
+      } else {
+        // Use text response for analysis
+        const data = {
+          textResponse: response,
+          scenarioData: scenario
+        };
+        
+        analysisResponse = await analyzeContentCenterSkill(data);
+      }
+      
+      const feedback = analysisResponse.data;
+      console.log('Vertex analysis response:', feedback);
+      
+      // Process the response and set results
+      setResults({
+        score: feedback.score,
+        strengths: feedback.strengths || [],
+        improvements: feedback.improvements || [],
+        feedback: feedback.feedback || "Assessment completed successfully.",
+        tips: feedback.tips || [],
+        keyMetrics: feedback.keyMetrics || {
+          professionalism: 0,
+          effectiveness: 0,
+          customerFocus: 0
+        }
+      });
+      
+      // Save results to context
+      if (currentSkill) {
+        // Format assessment data for saving
+        const assessmentData = formatAssessmentForSaving(feedback);
+        
+        const success = await saveContactCenterAssessment(
+          currentSkill.id, 
+          currentSkill.category, 
+          assessmentData
+        );
+        
+        // Note: We're not calling onComplete automatically anymore
+        // Instead, the user will need to explicitly click a button
+        // if they want to complete the assessment
+      }
+    } catch (error) {
+      console.error('Error analyzing with Vertex API:', error);
+      setError('Error analyzing your response. Please try again.');
+      
+      // Fallback to OpenAI analysis
+      analyzeResponse();
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+  
+  // Original analyze response using OpenAI (as fallback)
   const analyzeResponse = async () => {
     if (!response.trim() && !audioBlob) {
       setError('Please provide a response or recording before analyzing.');
@@ -170,11 +332,18 @@ function ContactCenterAssessment() {
       
       // Save results to context
       if (currentSkill) {
-        saveContactCenterAssessment(
+        // Format assessment data for saving
+        const assessmentData = formatAssessmentForSaving(feedback);
+        
+        const success = await saveContactCenterAssessment(
           currentSkill.id, 
           currentSkill.category, 
-          feedback
+          assessmentData
         );
+        
+        // Note: We're not calling onComplete automatically anymore
+        // Instead, the user will need to explicitly click a button
+        // if they want to complete the assessment
       }
     } catch (error) {
       console.error('Error analyzing response:', error);
@@ -204,6 +373,15 @@ function ContactCenterAssessment() {
     setResponse('');
     setResults(null);
     generateScenario();
+  };
+  
+  // Add a new function to handle completion explicitly
+  const handleFinishAssessment = () => {
+    if (results && onComplete) {
+      // Format the results again to ensure proper format
+      const assessmentData = formatAssessmentForSaving(results);
+      onComplete(assessmentData);
+    }
   };
   
   if (!currentSkill) {
@@ -313,6 +491,23 @@ function ContactCenterAssessment() {
                           >
                             Reset
                           </button>
+                          {!transcribing && !response && (
+                            <button
+                              onClick={transcribeAudio}
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                            >
+                              Transcribe Audio
+                            </button>
+                          )}
+                          {transcribing && (
+                            <span className="flex items-center text-indigo-600">
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Transcribing...
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -320,10 +515,10 @@ function ContactCenterAssessment() {
                   
                   <div className="flex justify-end">
                     <button
-                      onClick={analyzeResponse}
-                      disabled={analyzing}
+                      onClick={analyzeWithVertex}
+                      disabled={analyzing || transcribing}
                       className={`py-2 px-6 rounded-lg ${
-                        analyzing 
+                        analyzing || transcribing
                           ? 'bg-gray-400 cursor-not-allowed' 
                           : 'bg-purple-600 hover:bg-purple-700'
                       } text-white transition-colors`}
@@ -336,10 +531,12 @@ function ContactCenterAssessment() {
             </div>
           )}
           
-          {analyzing && (
+          {(analyzing || transcribing) && (
             <div className="text-center py-12">
               <div className="inline-block w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600">Analyzing your response...</p>
+              <p className="mt-4 text-gray-600">
+                {transcribing ? 'Transcribing your audio...' : 'Analyzing your response...'}
+              </p>
             </div>
           )}
           
@@ -451,10 +648,10 @@ function ContactCenterAssessment() {
                   Try Another Scenario
                 </button>
                 <button
-                  onClick={handleBack}
+                  onClick={handleFinishAssessment}
                   className="flex-1 py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                 >
-                  Finish
+                  Complete Assessment
                 </button>
               </div>
             </div>

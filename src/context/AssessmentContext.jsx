@@ -176,7 +176,7 @@ export const AssessmentProvider = ({ children }) => {
   };
   
   // Save a contact center skill assessment result
-  const saveContactCenterAssessment = async (skillId, category, results) => {
+  const saveContactCenterAssessment = async (skillId, category, assessmentData) => {
     // Get the agent ID from localStorage/auth utils
     const agentId = getAgentId();
     
@@ -190,26 +190,24 @@ export const AssessmentProvider = ({ children }) => {
     setError(null);
     
     try {
-      // Update local state first
+      // For local state, we'll continue to use the existing format
       setAssessmentResults(prev => ({
         ...prev,
         contactCenter: {
           ...prev.contactCenter,
           [skillId]: {
             category,
-            ...results
+            ...assessmentData
           }
         }
       }));
       
-      // Call API to save results to backend
+      // Call API to save results to backend using the new format
       if (import.meta.env.VITE_API_URL) {
         try {
-          // Use the correct endpoint from routes: /:id/contact-center-assessment
-          const response = await axios.post(`${import.meta.env.VITE_API_URL}/${agentId}/contact-center-assessment`, {
-            skillId,
-            category,
-            results
+          // Use the profiles endpoint with the format expected by the backend
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/contact-center-assessment`, { 
+            assessment: assessmentData 
           });
           
           console.log('Contact center assessment saved to backend:', response.data);

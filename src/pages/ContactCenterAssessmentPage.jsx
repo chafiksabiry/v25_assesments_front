@@ -38,12 +38,9 @@ function ContactCenterAssessmentPage() {
   const handleComplete = (results) => {
     console.log('Assessment completed:', results);
     
-    // Show success message (if we had a notification component)
-    
-    // Set a brief timeout to allow the user to see any results before redirecting
-    setTimeout(() => {
-      returnToParentApp();
-    }, 2000);
+    // Note: For now, we don't want to redirect automatically
+    // The user will remain on the assessment page to review their results
+    // They can use the Exit button if they want to leave
   };
   
   return (
