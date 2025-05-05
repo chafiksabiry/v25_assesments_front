@@ -20,12 +20,12 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    base: 'https://rep-assessment.harx.ai/',
+    base: 'https://rep-assessments.harx.ai/',
     plugins: [
       react({
         jsxRuntime: 'classic',
       }),
-      qiankun('repassessment', {
+      qiankun('repassessments', {
         useDevMode: true,
       }),
       removeReactRefreshScript(), // Add the script removal plugin
@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env': env,
     },
     server: {
-      port: 5178,
+      port: 5175,
       cors: true,
       hmr: {
         // Enable Hot Module Replacement for real-time updates during development
@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           format: 'umd',
-          name: 'repassessment',
+          name: 'repassessments',
           entryFileNames: 'index.js', // Fixed name for the JS entry file
           chunkFileNames: 'chunk-[name].js', // Fixed name for chunks
           assetFileNames: (assetInfo) => {
