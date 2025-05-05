@@ -45,11 +45,11 @@ export const initializeAuth = () => {
     
     return { userId, token, returnUrl, agentId };
   } else {
-    // In in-app mode, get values only from cookies
+    // In in-app mode, get values only from cookies and localStorage
     const userId = getCookie('userId');
-    const token = getCookie('token');
-    const returnUrl = getCookie('returnUrl') || '/';
-    const agentId = getCookie('agentId');
+    const token = localStorage.getItem('token');
+    const returnUrl = getCookie('returnUrl') || import.meta.env.VITE_RETURN_URL;
+    const agentId = localStorage.getItem('agentId');
     
     return { userId, token, returnUrl, agentId };
   }
