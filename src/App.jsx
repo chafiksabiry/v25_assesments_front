@@ -4,6 +4,8 @@ import LanguageAssessmentPage from './pages/LanguageAssessmentPage';
 import ContactCenterAssessmentPage from './pages/ContactCenterAssessmentPage';
 import { AssessmentProvider } from './context/AssessmentContext';
 import { initializeAuth } from './utils/authUtils';
+import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper';
+
 
 function App() {
   // Initialize authentication on component mount
@@ -14,7 +16,7 @@ function App() {
   
   return (
     <AssessmentProvider>
-      <Router>
+    <Router basename={qiankunWindow.__POWERED_BY_QIANKUN__ ? '/repassessments' : '/'}>
         <Routes>
           {/* Language assessment route */}
           <Route path="/assessment/language/:language" element={<LanguageAssessmentPage />} />
