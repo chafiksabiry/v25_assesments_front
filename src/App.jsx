@@ -8,18 +8,19 @@ import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper';
 
 
 function App() {
-  // Initialize authentication on component mount
-  useEffect(() => {
+  // Set basename based on run mode
   const isStandaloneMode = import.meta.env.VITE_RUN_MODE === 'standalone';
   const basename = isStandaloneMode ? '/' : '/repassessments';
 
+  // Initialize authentication on component mount
+  useEffect(() => {
     const { userId, token } = initializeAuth();
     console.log('Authentication initialized:', userId ? 'User authenticated' : 'No user ID');
   }, []);
   
   return (
     <AssessmentProvider>
-    <Router basename={basename}>
+      <Router basename={basename}>
         <Routes>
           {/* Language assessment route */}
           <Route path="/assessment/language/:language" element={<LanguageAssessmentPage />} />
