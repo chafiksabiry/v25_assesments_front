@@ -140,7 +140,7 @@ export const AssessmentProvider = ({ children }) => {
           } else {
             // In production mode, make the API call and handle errors normally
             // Use the correct endpoint: /:id/language-assessment
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/${agentId}/language-assessment`, {
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/language-assessment`, {
               language,
               proficiency,
               iso639_1,
