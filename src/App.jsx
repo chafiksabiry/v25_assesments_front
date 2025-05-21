@@ -10,13 +10,16 @@ import { qiankunWindow } from 'vite-plugin-qiankun/dist/helper';
 function App() {
   // Initialize authentication on component mount
   useEffect(() => {
+  const isStandaloneMode = import.meta.env.VITE_RUN_MODE === 'standalone';
+  const basename = isStandaloneMode ? '/' : '/repassessments';
+
     const { userId, token } = initializeAuth();
     console.log('Authentication initialized:', userId ? 'User authenticated' : 'No user ID');
   }, []);
   
   return (
     <AssessmentProvider>
-    <Router basename={qiankunWindow.__POWERED_BY_QIANKUN__ ? '/repassessments' : '/'}>
+    <Router basename={basename}>
         <Routes>
           {/* Language assessment route */}
           <Route path="/assessment/language/:language" element={<LanguageAssessmentPage />} />
