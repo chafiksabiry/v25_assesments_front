@@ -407,8 +407,6 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
         setError(null);
         
         // Show success message as a toast/notification
-        // This could be a temporary state in this component
-        // or a centralized notification system
         const notificationDiv = document.createElement('div');
         notificationDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fadeIn';
         notificationDiv.textContent = 'Assessment results saved successfully!';
@@ -426,7 +424,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
           }
         }, 3000);
         
-        // Call onComplete if it exists
+        // Call onComplete with the assessment data
         if (onComplete) {
           onComplete(assessmentData);
         }
