@@ -38,9 +38,8 @@ function ContactCenterAssessmentPage() {
   const handleComplete = (results) => {
     console.log('Assessment completed:', results);
     
-    // Note: For now, we don't want to redirect automatically
-    // The user will remain on the assessment page to review their results
-    // They can use the Exit button if they want to leave
+    // Navigate back to parent app after completion
+    returnToParentApp();
   };
   
   return (
