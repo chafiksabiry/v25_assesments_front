@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import LanguageAssessment from '../components/LanguageAssessment';
 import { useAssessment } from '../context/AssessmentContext';
 import { isAuthenticated, returnToParentApp, getLanguageIsoCode } from '../utils/authUtils';
+import { normalizeLanguageName } from '../utils/languageUtils';
 import Notification from '../components/Notification';
 
 function LanguageAssessmentPage() {
@@ -68,15 +69,21 @@ function LanguageAssessmentPage() {
     }
   };
   
-  // Decode URI component in case the language contains special characters
+  // Decode URI component and normalize language name
   const decodedLanguage = React.useMemo(() => {
     try {
-      return decodeURIComponent(language || 'English');
+      const decoded = decodeURIComponent(language || 'English');
+      return decoded;
     } catch (e) {
       console.error('Error decoding language parameter:', e);
       return 'English';
     }
   }, [language]);
+
+  // Get the proper language name for display (converts codes to full names)
+  const displayLanguageName = React.useMemo(() => {
+    return normalizeLanguageName(decodedLanguage);
+  }, [decodedLanguage]);
   
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -84,7 +91,7 @@ function LanguageAssessmentPage() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-blue-700 px-6 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">
-              {decodedLanguage} Assessment
+              {displayLanguageName} Assessment
             </h1>
             <button 
               onClick={returnToParentApp}
@@ -97,6 +104,7 @@ function LanguageAssessmentPage() {
           <div className="p-6">
             <LanguageAssessment 
               language={decodedLanguage} 
+              displayName={displayLanguageName}
               onComplete={handleComplete}
               onExit={returnToParentApp}
             />
