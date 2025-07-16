@@ -9,7 +9,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-function LanguageAssessment({ language, onComplete, onExit }) {
+function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const { loading: assessmentLoading, error: assessmentError } = useAssessment();
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -258,7 +258,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
           <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
         </div>
-        <p className="text-gray-600">Generating creative content for {language} assessment...</p>
+        <p className="text-gray-600">Generating creative content for {displayName || language} assessment...</p>
       </div>
     );
   }
@@ -289,7 +289,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               {passage?.title}
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Read the following passage aloud in {language}. Click "Start Recording" when ready.
+              Read the following passage aloud in {displayName || language}. Click "Start Recording" when ready.
               {passage?.estimatedDuration && (
                 <span className="block mt-1 text-xs text-gray-400">
                   Estimated reading time: ~{passage.estimatedDuration} seconds
