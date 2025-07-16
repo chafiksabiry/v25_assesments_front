@@ -5,8 +5,11 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-// In-memory cache for passages
+// In-memory cache for passages - now uses stable keys
 const passageCache = new Map();
+
+// Session cache to ensure same text per language per session
+const sessionPassageCache = new Map();
 
 /**
  * Get language code using OpenAI
@@ -71,24 +74,23 @@ const getLanguageCode = async (language) => {
  */
 const generateRandomPassage = async (targetLanguageCode, language, forceNew = false) => {
   try {
-    // Create a unique cache key based on timestamp and random number for variety
-    const randomId = Math.random().toString(36).substring(2, 8);
-    const timestamp = Date.now();
-    const cacheKey = `${targetLanguageCode}_${randomId}_${timestamp}`;
+    // Create stable cache key for consistent experience
+    const stableCacheKey = `${targetLanguageCode}_current`;
+    const sessionKey = `session_${targetLanguageCode}`;
     
-    // Only use cache if not forcing new generation and we want to prevent immediate duplicates
-    if (!forceNew && passageCache.size > 0) {
-      // Check if we have a recent passage for this language (within last 5 minutes)
-      const recentKeys = Array.from(passageCache.keys()).filter(key => {
-        if (!key.startsWith(`${targetLanguageCode}_`)) return false;
-        const keyTimestamp = parseInt(key.split('_')[2]);
-        return (timestamp - keyTimestamp) < 300000; // 5 minutes
-      });
-      
-      if (recentKeys.length > 0) {
-        const recentKey = recentKeys[recentKeys.length - 1];
-        return passageCache.get(recentKey);
-      }
+    // Check session cache first for consistency within the same session
+    if (!forceNew && sessionPassageCache.has(sessionKey)) {
+      console.log(`Using cached passage for ${language} from session cache`);
+      return sessionPassageCache.get(sessionKey);
+    }
+    
+    // Check regular cache if not forcing new generation
+    if (!forceNew && passageCache.has(stableCacheKey)) {
+      const cachedPassage = passageCache.get(stableCacheKey);
+      // Also store in session cache for consistency
+      sessionPassageCache.set(sessionKey, cachedPassage);
+      console.log(`Using cached passage for ${language} from main cache`);
+      return cachedPassage;
     }
 
     console.log(`Generating new creative passage in ${language}...`);
@@ -134,26 +136,16 @@ const generateRandomPassage = async (targetLanguageCode, language, forceNew = fa
       estimatedDuration: generationResult.estimatedDuration || 45,
       code: targetLanguageCode,
       generatedAt: new Date().toISOString(),
-      id: randomId
+      id: `${targetLanguageCode}_${Date.now()}`
     };
 
-    // Cache the new passage
-    passageCache.set(cacheKey, newPassage);
+    // Cache the new passage with stable key
+    passageCache.set(stableCacheKey, newPassage);
     
-    // Clean old cache entries to prevent memory bloat (keep only last 10 per language)
-    const languageKeys = Array.from(passageCache.keys())
-      .filter(key => key.startsWith(`${targetLanguageCode}_`))
-      .sort((a, b) => {
-        const timestampA = parseInt(a.split('_')[2]);
-        const timestampB = parseInt(b.split('_')[2]);
-        return timestampB - timestampA; // Most recent first
-      });
+    // Also cache in session for consistency
+    sessionPassageCache.set(sessionKey, newPassage);
     
-    // Remove old entries, keep only the 10 most recent
-    if (languageKeys.length > 10) {
-      const keysToDelete = languageKeys.slice(10);
-      keysToDelete.forEach(key => passageCache.delete(key));
-    }
+    console.log(`New passage generated and cached for ${language}`);
     
     return newPassage;
   } catch (error) {
@@ -173,7 +165,7 @@ export const getPassage = async (language, forceNew = false) => {
       throw new Error(`Unable to determine language code for: ${language}`);
     }
 
-    // Generate a new random passage
+    // Generate a passage (will use cache unless forceNew is true)
     return await generateRandomPassage(langCode, language, forceNew);
 
   } catch (error) {
@@ -193,8 +185,8 @@ export const getNewPassage = async (language) => {
  * Check if passage exists for language in cache
  */
 export const hasPassage = (langCode) => {
-  const cachedKeys = Array.from(passageCache.keys());
-  return cachedKeys.some(key => key.startsWith(`${langCode}_`));
+  const stableCacheKey = `${langCode}_current`;
+  return passageCache.has(stableCacheKey);
 };
 
 /**
@@ -210,8 +202,18 @@ export const getAvailableLanguages = () => {
  * Clear cache for a specific language (useful for testing)
  */
 export const clearLanguageCache = (langCode) => {
-  const keysToDelete = Array.from(passageCache.keys()).filter(key => key.startsWith(`${langCode}_`));
-  keysToDelete.forEach(key => passageCache.delete(key));
+  const stableCacheKey = `${langCode}_current`;
+  const sessionKey = `session_${langCode}`;
+  passageCache.delete(stableCacheKey);
+  sessionPassageCache.delete(sessionKey);
+};
+
+/**
+ * Clear session cache (useful when user wants fresh content)
+ */
+export const clearSessionCache = () => {
+  sessionPassageCache.clear();
+  console.log('Session cache cleared');
 };
 
 /**
@@ -220,6 +222,7 @@ export const clearLanguageCache = (langCode) => {
 export const getCacheStats = () => {
   return {
     totalCached: passageCache.size,
+    sessionCached: sessionPassageCache.size,
     languages: getAvailableLanguages(),
     recentPassages: Array.from(passageCache.values()).slice(-5) // Last 5 passages
   };
