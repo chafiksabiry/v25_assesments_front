@@ -81,8 +81,21 @@ function LanguageAssessmentPage() {
   }, [language]);
 
   // Get the proper language name for display (converts codes to full names)
-  const displayLanguageName = React.useMemo(() => {
-    return normalizeLanguageName(decodedLanguage);
+  const [displayLanguageName, setDisplayLanguageName] = useState(decodedLanguage);
+  
+  // Update display name when language changes
+  useEffect(() => {
+    const updateDisplayName = async () => {
+      try {
+        const name = await normalizeLanguageName(decodedLanguage);
+        setDisplayLanguageName(name);
+      } catch (error) {
+        console.error('Error normalizing language name:', error);
+        setDisplayLanguageName(decodedLanguage); // Fallback to original
+      }
+    };
+    
+    updateDisplayName();
   }, [decodedLanguage]);
   
   return (
