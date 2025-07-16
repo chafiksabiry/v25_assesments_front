@@ -141,24 +141,85 @@ const LANGUAGE_CODE_TO_NAME = {
 };
 
 /**
- * Convert language code to full language name in English
- * @param {string} languageCode - ISO 639-1 language code (e.g., 'fr', 'ar', 'tr')
- * @returns {string} Full language name in English
+ * Convert language code to full language name in English using OpenAI
+ * @param {string} languageCode - ISO 639-1 language code
+ * @returns {Promise<string>} Full language name in English
  */
-export const getLanguageNameFromCode = (languageCode) => {
+const getLanguageNameFromAI = async (languageCode) => {
+  try {
+    // Import OpenAI dynamically to avoid circular dependencies
+    const { default: OpenAI } = await import('openai');
+    
+    const openai = new OpenAI({
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `You are a language expert. Given an ISO 639-1 language code, return ONLY the corresponding full language name in English.
+          For example:
+          - "fr" -> "French"
+          - "ar" -> "Arabic"
+          - "tr" -> "Turkish"
+          - "sw" -> "Swahili"
+          Return ONLY the language name, nothing else.`
+        },
+        {
+          role: "user",
+          content: languageCode
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 20
+    });
+
+    const languageName = response.choices[0].message.content.trim();
+    
+    // Basic validation - should be a reasonable language name
+    if (languageName && languageName.length > 1 && languageName.length < 50) {
+      return languageName;
+    }
+    
+    throw new Error(`Invalid language name returned: ${languageName}`);
+  } catch (error) {
+    console.error('Error getting language name from AI:', error);
+    // Fallback to uppercase code if AI fails
+    return languageCode.toUpperCase();
+  }
+};
+
+/**
+ * Convert language code to full language name in English
+ * Uses predefined map first, then OpenAI as fallback
+ * @param {string} languageCode - ISO 639-1 language code (e.g., 'fr', 'ar', 'tr')
+ * @returns {Promise<string>|string} Full language name in English
+ */
+export const getLanguageNameFromCode = async (languageCode) => {
   if (!languageCode) return 'Unknown Language';
   
   const normalizedCode = languageCode.toLowerCase().trim();
-  return LANGUAGE_CODE_TO_NAME[normalizedCode] || languageCode.toUpperCase();
+  
+  // First, try the predefined map (fast)
+  if (LANGUAGE_CODE_TO_NAME[normalizedCode]) {
+    return LANGUAGE_CODE_TO_NAME[normalizedCode];
+  }
+  
+  // If not found in map, use OpenAI as fallback (intelligent)
+  console.log(`Language code "${normalizedCode}" not found in predefined map, using OpenAI fallback...`);
+  return await getLanguageNameFromAI(normalizedCode);
 };
 
 /**
  * Get language name from either code or full name
  * This function handles both cases: when we receive a code or when we receive a full name
  * @param {string} input - Either a language code or full language name
- * @returns {string} Full language name in English
+ * @returns {Promise<string>} Full language name in English
  */
-export const normalizeLanguageName = (input) => {
+export const normalizeLanguageName = async (input) => {
   if (!input) return 'English';
   
   const trimmedInput = input.trim();
@@ -170,7 +231,7 @@ export const normalizeLanguageName = (input) => {
   }
   
   // If it's 2 characters or less, treat as language code
-  return getLanguageNameFromCode(trimmedInput);
+  return await getLanguageNameFromCode(trimmedInput);
 };
 
 /**
