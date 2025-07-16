@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getPassage, getNewPassage, clearSessionCache } from '../utils/passageManager';
+import { getPassage, getNewPassage } from '../utils/passageManager';
 import { analyzeRecordingVertex, uploadRecording } from '../lib/api/vertex';
-// Import debug utilities for development (can be removed in production)
-import '../utils/debug';
 import OpenAI from 'openai';
 import { useAssessment } from '../context/AssessmentContext';
 
@@ -25,53 +23,68 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const [languageCode, setLanguageCode] = useState(null);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
-
-  // Use ref to track the current language to prevent unnecessary reloads
+  
+  // Protection against race conditions
+  const currentRequestId = useRef(0);
   const currentLanguageRef = useRef(null);
-  const isLoadingRef = useRef(false);
 
-  // Function to load a passage (initial or new)
+  // Simple function to load a passage
   const loadPassage = async (forceNew = false) => {
-    // Prevent multiple simultaneous loads
-    if (isLoadingRef.current && !forceNew) {
-      console.log('Already loading passage, skipping...');
-      return;
-    }
-
+    // Generate unique request ID
+    const requestId = ++currentRequestId.current;
+    
     try {
-      isLoadingRef.current = true;
       setIsGenerating(true);
       setPassageError(null);
       
-      console.log(`${forceNew ? 'Force generating' : 'Loading'} passage for language: ${language}`);
+      console.log(`[Request ${requestId}] ${forceNew ? 'Force generating' : 'Loading'} passage for language: ${language}`);
       
       const passageData = forceNew 
         ? await getNewPassage(language)
         : await getPassage(language);
       
+      // Check if this is still the latest request
+      if (requestId !== currentRequestId.current) {
+        console.log(`[Request ${requestId}] Ignoring outdated response for ${language}`);
+        return;
+      }
+      
       setPassage(passageData);
       setLanguageCode(passageData.code);
-      currentLanguageRef.current = language; // Mark this language as loaded
+      currentLanguageRef.current = language;
       
-      console.log(`Passage loaded successfully for ${language}`);
+      console.log(`[Request ${requestId}] Passage loaded successfully for ${language}:`, passageData.title);
     } catch (error) {
-      console.error('Error loading passage:', error);
-      setPassageError(error.message);
-      setPassage(null);
+      // Only show error if this is still the latest request
+      if (requestId === currentRequestId.current) {
+        console.error(`[Request ${requestId}] Error loading passage:`, error);
+        setPassageError(error.message);
+        setPassage(null);
+      } else {
+        console.log(`[Request ${requestId}] Ignoring error from outdated request`);
+      }
     } finally {
-      setIsGenerating(false);
-      isLoadingRef.current = false;
+      // Only update loading state if this is still the latest request
+      if (requestId === currentRequestId.current) {
+        setIsGenerating(false);
+      }
     }
   };
 
+  // Load passage when component mounts or language changes
   useEffect(() => {
-    // Only load passage if language has changed or no passage exists
-    if (currentLanguageRef.current !== language || !passage) {
-      console.log(`Language changed from ${currentLanguageRef.current} to ${language}, loading new passage`);
-      loadPassage();
-    } else {
-      console.log(`Passage already exists for ${language}, skipping generation`);
-    }
+    // Small delay to prevent rapid consecutive calls
+    const timer = setTimeout(() => {
+      // Only load if language has actually changed or no passage exists
+      if (currentLanguageRef.current !== language || !passage) {
+        console.log(`Loading passage for language change: ${currentLanguageRef.current} → ${language}`);
+        loadPassage();
+      } else {
+        console.log(`Language ${language} already loaded, skipping`);
+      }
+    }, 10); // Very short delay to debounce
+
+    return () => clearTimeout(timer);
   }, [language]);
 
   const startRecording = async () => {
@@ -260,7 +273,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     setResults(null);
     // Don't reset previousScores or attempts - we want to track these
     
-    // Generate a new passage for variety (forceNew = true)
+    // Generate a new passage for variety
     await loadPassage(true);
   };
 
