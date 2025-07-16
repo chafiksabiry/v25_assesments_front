@@ -5,12 +5,6 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-// In-memory cache for passages - now uses stable keys
-const passageCache = new Map();
-
-// Session cache to ensure same text per language per session
-const sessionPassageCache = new Map();
-
 /**
  * Get language code using OpenAI
  */
@@ -72,27 +66,8 @@ const getLanguageCode = async (language) => {
 /**
  * Generate a random passage in the target language using OpenAI
  */
-const generateRandomPassage = async (targetLanguageCode, language, forceNew = false) => {
+const generateRandomPassage = async (targetLanguageCode, language) => {
   try {
-    // Create stable cache key for consistent experience
-    const stableCacheKey = `${targetLanguageCode}_current`;
-    const sessionKey = `session_${targetLanguageCode}`;
-    
-    // Check session cache first for consistency within the same session
-    if (!forceNew && sessionPassageCache.has(sessionKey)) {
-      console.log(`Using cached passage for ${language} from session cache`);
-      return sessionPassageCache.get(sessionKey);
-    }
-    
-    // Check regular cache if not forcing new generation
-    if (!forceNew && passageCache.has(stableCacheKey)) {
-      const cachedPassage = passageCache.get(stableCacheKey);
-      // Also store in session cache for consistency
-      sessionPassageCache.set(sessionKey, cachedPassage);
-      console.log(`Using cached passage for ${language} from main cache`);
-      return cachedPassage;
-    }
-
     console.log(`Generating new creative passage in ${language}...`);
 
     const response = await openai.chat.completions.create({
@@ -136,16 +111,10 @@ const generateRandomPassage = async (targetLanguageCode, language, forceNew = fa
       estimatedDuration: generationResult.estimatedDuration || 45,
       code: targetLanguageCode,
       generatedAt: new Date().toISOString(),
-      id: `${targetLanguageCode}_${Date.now()}`
+      id: `${targetLanguageCode}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
     };
-
-    // Cache the new passage with stable key
-    passageCache.set(stableCacheKey, newPassage);
     
-    // Also cache in session for consistency
-    sessionPassageCache.set(sessionKey, newPassage);
-    
-    console.log(`New passage generated and cached for ${language}`);
+    console.log(`New passage generated for ${language}:`, newPassage.title);
     
     return newPassage;
   } catch (error) {
@@ -155,9 +124,9 @@ const generateRandomPassage = async (targetLanguageCode, language, forceNew = fa
 };
 
 /**
- * Get passage for specified language, generate if needed
+ * Get passage for specified language - always generates a new one
  */
-export const getPassage = async (language, forceNew = false) => {
+export const getPassage = async (language) => {
   try {
     // Get standardized language code using AI if needed
     const langCode = await getLanguageCode(language);
@@ -165,8 +134,8 @@ export const getPassage = async (language, forceNew = false) => {
       throw new Error(`Unable to determine language code for: ${language}`);
     }
 
-    // Generate a passage (will use cache unless forceNew is true)
-    return await generateRandomPassage(langCode, language, forceNew);
+    // Always generate a new passage
+    return await generateRandomPassage(langCode, language);
 
   } catch (error) {
     console.error('Error getting passage:', error);
@@ -175,55 +144,8 @@ export const getPassage = async (language, forceNew = false) => {
 };
 
 /**
- * Generate a new passage for the same language (for retakes with different content)
+ * Generate a new passage for the same language (same as getPassage now)
  */
 export const getNewPassage = async (language) => {
-  return await getPassage(language, true);
-};
-
-/**
- * Check if passage exists for language in cache
- */
-export const hasPassage = (langCode) => {
-  const stableCacheKey = `${langCode}_current`;
-  return passageCache.has(stableCacheKey);
-};
-
-/**
- * Get available language codes from cache
- */
-export const getAvailableLanguages = () => {
-  const cachedKeys = Array.from(passageCache.keys());
-  const langCodes = [...new Set(cachedKeys.map(key => key.split('_')[0]))];
-  return langCodes;
-};
-
-/**
- * Clear cache for a specific language (useful for testing)
- */
-export const clearLanguageCache = (langCode) => {
-  const stableCacheKey = `${langCode}_current`;
-  const sessionKey = `session_${langCode}`;
-  passageCache.delete(stableCacheKey);
-  sessionPassageCache.delete(sessionKey);
-};
-
-/**
- * Clear session cache (useful when user wants fresh content)
- */
-export const clearSessionCache = () => {
-  sessionPassageCache.clear();
-  console.log('Session cache cleared');
-};
-
-/**
- * Get cache statistics
- */
-export const getCacheStats = () => {
-  return {
-    totalCached: passageCache.size,
-    sessionCached: sessionPassageCache.size,
-    languages: getAvailableLanguages(),
-    recentPassages: Array.from(passageCache.values()).slice(-5) // Last 5 passages
-  };
+  return await getPassage(language);
 }; 
