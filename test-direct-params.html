@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Clean URLs: 'lang' vs 'language' vs Legacy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .best {
+            border-color: #28a745;
+            background-color: #f8fff8;
+        }
+        .best h3 {
+            color: #28a745;
+        }
+        .good {
+            border-color: #17a2b8;
+            background-color: #f8fdff;
+        }
+        .good h3 {
+            color: #117a8b;
+        }
+        .redundant {
+            border-color: #ffc107;
+            background-color: #fffbf0;
+        }
+        .redundant h3 {
+            color: #856404;
+        }
+        .old-method {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .old-method h3 {
+            color: #721c24;
+        }
+        .test-section h3 {
+            margin-bottom: 15px;
+        }
+        .test-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .test-link {
+            display: inline-block;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+        .best .test-link {
+            background-color: #28a745;
+        }
+        .best .test-link:hover {
+            background-color: #218838;
+        }
+        .good .test-link {
+            background-color: #17a2b8;
+        }
+        .good .test-link:hover {
+            background-color: #138496;
+        }
+        .redundant .test-link {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .redundant .test-link:hover {
+            background-color: #e0a800;
+        }
+        .old-method .test-link {
+            background-color: #dc3545;
+        }
+        .old-method .test-link:hover {
+            background-color: #c82333;
+        }
+        .url-example {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 5px;
+            border-left: 4px solid;
+        }
+        .best .url-example {
+            border-left-color: #28a745;
+        }
+        .good .url-example {
+            border-left-color: #17a2b8;
+        }
+        .redundant .url-example {
+            border-left-color: #ffc107;
+        }
+        .old-method .url-example {
+            border-left-color: #dc3545;
+        }
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin-bottom: 20px;
+        }
+        .highlight {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #0066cc;
+            margin-bottom: 20px;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .comparison-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .checkmark {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .crossmark {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-best {
+            background-color: #28a745;
+            color: white;
+        }
+        .badge-good {
+            background-color: #17a2b8;
+            color: white;
+        }
+        .badge-redundant {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .badge-old {
+            background-color: #dc3545;
+            color: white;
+        }
+        .redundancy-highlight {
+            background-color: #ffeb3b;
+            color: #333;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Clean URLs: 'lang' vs 'language' vs Legacy</h1>
+        
+        <div class="highlight">
+            <strong>🎯 NOUVELLE APPROCHE:</strong> Utilisation du paramètre <code>lang</code> au lieu de <code>language</code> pour éviter la redondance avec <code>/assessment/language</code> dans l'URL !
+        </div>
+        
+        <div class="note">
+            <strong>Note:</strong> Ces liens utilisent localhost:5173 comme URL de base. Assurez-vous que votre serveur de développement fonctionne avec <code>npm run dev</code>.
+        </div>
+
+        <div class="test-section best">
+            <h3>🏆 MEILLEURE APPROCHE: URL Propre avec 'lang' <span class="badge badge-best">NOUVEAU</span></h3>
+            <p><strong>Aucune redondance !</strong> Le mot "language" n'apparaît qu'une seule fois dans l'URL :</p>
+            <div class="test-links">
+                <a href="http://localhost:5173/assessment/language?lang=English&code=en" class="test-link" target="_blank">
+                    🇺🇸 English (en)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=English&code=en
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?lang=French&code=fr" class="test-link" target="_blank">
+                    🇫🇷 French (fr)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=French&code=fr
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?lang=Spanish&code=es" class="test-link" target="_blank">
+                    🇪🇸 Spanish (es)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=Spanish&code=es
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?lang=Arabic&code=ar" class="test-link" target="_blank">
+                    🇸🇦 Arabic (ar)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=Arabic&code=ar
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?lang=German&code=de" class="test-link" target="_blank">
+                    🇩🇪 German (de)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=German&code=de
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?lang=Japanese&code=ja" class="test-link" target="_blank">
+                    🇯🇵 Japanese (ja)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?lang=Japanese&code=ja
+                    <!-- ✅ "language" appears only once! -->
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section good">
+            <h3>👍 ACCEPTABLE: URL Propre avec 'language' <span class="badge badge-good">LEGACY</span></h3>
+            <p><strong>Redondance légère.</strong> Le mot "language" apparaît dans le path ET le paramètre :</p>
+            <div class="test-links">
+                <a href="http://localhost:5173/assessment/language?language=English&code=en" class="test-link" target="_blank">
+                    🇺🇸 English (avec redondance)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?<span class="redundancy-highlight">language</span>=English&code=en
+                    <!-- ⚠️ "language" appears twice -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language?language=French&code=fr" class="test-link" target="_blank">
+                    🇫🇷 French (avec redondance)
+                </a>
+                <div class="url-example">
+                    /assessment/<span class="redundancy-highlight">language</span>?<span class="redundancy-highlight">language</span>=French&code=fr
+                    <!-- ⚠️ "language" appears twice -->
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section redundant">
+            <h3>⚠️ NON RECOMMANDÉ: URLs Legacy avec Double Redondance <span class="badge badge-redundant">REDONDANT</span></h3>
+            <p><strong>Double redondance !</strong> Le nom de la langue ET "language" apparaissent deux fois :</p>
+            <div class="test-links">
+                <a href="http://localhost:5173/assessment/language/English?language=English&code=en" class="test-link" target="_blank">
+                    🇺🇸 English (double redondance)
+                </a>
+                <div class="url-example">
+                    /assessment/language/<span class="redundancy-highlight">English</span>?language=<span class="redundancy-highlight">English</span>&code=en
+                    <!-- ❌ "English" appears twice + "language" redundancy -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language/French?language=French&code=fr" class="test-link" target="_blank">
+                    🇫🇷 French (double redondance)
+                </a>
+                <div class="url-example">
+                    /assessment/language/<span class="redundancy-highlight">French</span>?language=<span class="redundancy-highlight">French</span>&code=fr
+                    <!-- ❌ "French" appears twice + "language" redundancy -->
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section old-method">
+            <h3>❌ ANCIENNE MÉTHODE: Avec traitement IA <span class="badge badge-old">LENT</span></h3>
+            <p><strong>Nécessite un traitement IA !</strong> Plus lent et moins fiable :</p>
+            <div class="test-links">
+                <a href="http://localhost:5173/assessment/language/English" class="test-link" target="_blank">
+                    🇺🇸 English (traitement IA)
+                </a>
+                <div class="url-example">
+                    /assessment/language/English
+                    <!-- Requires AI processing to determine ISO code -->
+                </div>
+
+                <a href="http://localhost:5173/assessment/language/French" class="test-link" target="_blank">
+                    🇫🇷 French (traitement IA)
+                </a>
+                <div class="url-example">
+                    /assessment/language/French
+                    <!-- Requires AI processing to determine ISO code -->
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Tableau de Comparaison</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Caractéristique</th>
+                        <th>🏆 'lang' Parameter</th>
+                        <th>👍 'language' Parameter</th>
+                        <th>⚠️ Legacy Redundant</th>
+                        <th>❌ Old Method</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Format URL</strong></td>
+                        <td><code>/assessment/language?lang=X&code=Y</code></td>
+                        <td><code>/assessment/language?language=X&code=Y</code></td>
+                        <td><code>/assessment/language/X?language=X&code=Y</code></td>
+                        <td><code>/assessment/language/X</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Redondance</strong></td>
+                        <td><span class="checkmark">✓ Aucune redondance</span></td>
+                        <td><span class="warning">⚠ "language" x2</span></td>
+                        <td><span class="crossmark">✗ Nom langue x2 + "language" x2</span></td>
+                        <td><span class="checkmark">✓ Aucune redondance</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Vitesse</strong></td>
+                        <td><span class="checkmark">✓ Instantané</span></td>
+                        <td><span class="checkmark">✓ Instantané</span></td>
+                        <td><span class="checkmark">✓ Instantané</span></td>
+                        <td><span class="crossmark">✗ Traitement IA requis</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fiabilité</strong></td>
+                        <td><span class="checkmark">✓ 100% fiable</span></td>
+                        <td><span class="checkmark">✓ 100% fiable</span></td>
+                        <td><span class="checkmark">✓ 100% fiable</span></td>
+                        <td><span class="warning">⚠ Dépend de l'IA/mapping</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Longueur URL</strong></td>
+                        <td><span class="checkmark">✓ Plus courte</span></td>
+                        <td><span class="info">○ Moyenne</span></td>
+                        <td><span class="crossmark">✗ Plus longue</span></td>
+                        <td><span class="checkmark">✓ La plus courte</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Aspect Professionnel</strong></td>
+                        <td><span class="checkmark">✓ Propre & moderne</span></td>
+                        <td><span class="info">○ Acceptable</span></td>
+                        <td><span class="crossmark">✗ Répétitif</span></td>
+                        <td><span class="warning">⚠ Simple mais limité</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Ce qu'il faut observer</h3>
+            <p>Lors des tests, vérifiez ces messages dans la console du navigateur :</p>
+            <ul>
+                <li><strong>🏆 'lang' Parameter:</strong> "✅ Using CLEAN route with 'lang' parameter - Language: [name], Code: [code]"</li>
+                <li><strong>👍 'language' Parameter:</strong> "✅ Using CLEAN route with 'language' parameter - Language: [name], Code: [code]"</li>
+                <li><strong>⚠️ Legacy Redundant:</strong> "⚠️ Using LEGACY route with 'language' query param - Language: [name], Code: [code]"</li>
+                <li><strong>❌ Old Method:</strong> "⚠️ Using OLD method - Language: [name], ISO code: [code] or unknown"</li>
+            </ul>
+            <p>Remarquez aussi le badge "CLEAN URL" dans l'en-tête quand vous utilisez l'approche recommandée !</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🎯 Scénarios de Test</h3>
+            <ul>
+                <li><strong>Test de Redondance :</strong> Comptez combien de fois le même mot apparaît dans chaque URL</li>
+                <li><strong>Test de Vitesse :</strong> Comparez la rapidité de chargement de chaque méthode</li>
+                <li><strong>Test d'Apparence :</strong> Notez quelles URLs semblent les plus professionnelles</li>
+                <li><strong>Test Console :</strong> Vérifiez les logs de la console pour les différentes méthodes</li>
+                <li><strong>Test de Gestion d'Erreur :</strong> Essayez <a href="http://localhost:5173/assessment/language" target="_blank">URL propre sans paramètres</a> pour voir la gestion d'erreur</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Exemple d'Intégration JavaScript</h3>
+            <pre><code>// 🏆 RECOMMANDÉ: Approche URL propre avec paramètre 'lang' (aucune redondance)
+function navigateToLanguageAssessment(languageName, languageCode, userId, token, returnUrl) {
+    const params = new URLSearchParams({
+        lang: languageName,  // 'lang' au lieu de 'language' - aucune redondance !
+        code: languageCode,
+        userId: userId,
+        token: token,
+        returnUrl: returnUrl
+    });
+    
+    const url = `http://localhost:5173/assessment/language?${params.toString()}`;
+    window.location.href = url;
+}
+
+// 👍 ACCEPTABLE: Approche avec paramètre 'language' (légère redondance)
+function navigateToLanguageAssessmentLegacy(languageName, languageCode, userId, token, returnUrl) {
+    const params = new URLSearchParams({
+        language: languageName,  // redondant avec le path "/assessment/language"
+        code: languageCode,
+        userId: userId,
+        token: token,
+        returnUrl: returnUrl
+    });
+    
+    const url = `http://localhost:5173/assessment/language?${params.toString()}`;
+    window.location.href = url;
+}
+
+// Exemples d'utilisation:
+navigateToLanguageAssessment('English', 'en', '12345', 'your-token', 'https://your-app.com/dashboard');
+navigateToLanguageAssessment('French', 'fr', '12345', 'your-token', 'https://your-app.com/dashboard');
+
+// 📋 Référence rapide pour les différentes approches:
+// 🏆 Meilleur:   /assessment/language?lang=English&code=en        (aucune redondance)
+// 👍 Acceptable: /assessment/language?language=English&code=en    (redondance légère)
+// ⚠️ Éviter:     /assessment/language/English?language=English&code=en  (double redondance)
+// ❌ Ancien:     /assessment/language/English                     (traitement IA requis)
+</code></pre>
+        </div>
+
+        <div class="test-section">
+            <h3>🏆 Résumé des Recommandations</h3>
+            <p><strong>Utilisez l'approche 🏆 avec le paramètre 'lang'</strong> pour les nouvelles implémentations parce que :</p>
+            <ol>
+                <li><strong>Aucune redondance</strong> - Le mot "language" n'apparaît qu'une seule fois</li>
+                <li><strong>URLs plus propres</strong> - Aspect plus professionnel</li>
+                <li><strong>Meilleure performance</strong> - Aucun traitement IA nécessaire</li>
+                <li><strong>Contrôle exact</strong> - Vous spécifiez exactement quoi utiliser</li>
+                <li><strong>Future-proof</strong> - Approche moderne et maintenable</li>
+            </ol>
+            <p>Les URLs legacy sont conservées pour la rétrocompatibilité mais devraient être migrées quand possible.</p>
+        </div>
+    </div>
+</body>
+</html> 
