@@ -70,9 +70,9 @@ function LanguageAssessmentPage() {
       });
       
       // Set a brief timeout to allow the user to see the success notification before redirecting
-      /* setTimeout(() => {
+      setTimeout(() => {
         returnToParentApp();
-      }, 2000); */
+      }, 2000);
     } else {
       setNotification({
         message: 'Results saved locally but could not be sent to server',
