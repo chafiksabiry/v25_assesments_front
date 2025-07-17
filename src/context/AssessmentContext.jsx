@@ -117,9 +117,8 @@ export const AssessmentProvider = ({ children }) => {
           if (isDemoMode) {
             console.log('Demo mode: Would save assessment data to backend:', {
               agentId,
-              language,
+              languageCode: iso639_1,
               proficiency,
-              iso639_1,
               results: resultsToSend
             });
             
@@ -127,9 +126,8 @@ export const AssessmentProvider = ({ children }) => {
             try {
               // Use the correct endpoint: /:id/language-assessment
               const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/language-assessment`, {
-                language,
+                languageCode: iso639_1,
                 proficiency,
-                iso639_1,
                 results: resultsToSend
               });
               console.log('Assessment saved to backend:', response.data);
@@ -141,9 +139,8 @@ export const AssessmentProvider = ({ children }) => {
             // In production mode, make the API call and handle errors normally
             // Use the correct endpoint: /:id/language-assessment
             const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/language-assessment`, {
-              language,
+              languageCode: iso639_1,
               proficiency,
-              iso639_1,
               results: resultsToSend
             });
             console.log('Assessment saved to backend:', response.data);
@@ -154,7 +151,7 @@ export const AssessmentProvider = ({ children }) => {
           if (apiError.response && apiError.response.data && 
               apiError.response.data.message && 
               apiError.response.data.message.includes('not found in user\'s profile')) {
-            setError(`The language with ISO code ${iso639_1} needs to be added to your profile first.`);
+            setError(`The language with code ${iso639_1} needs to be added to your profile first.`);
           } else {
             // Generic error
             setError('Warning: Results saved locally but could not be sent to server');
