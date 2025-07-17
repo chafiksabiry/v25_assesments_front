@@ -28,32 +28,10 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const currentRequestId = useRef(0);
   const currentLanguageRef = useRef(null);
 
-  // Get clean language name for display (always use displayName if available)
+  // Get clean language name for display (displayName should always be clean now)
   const getCleanLanguageName = () => {
-    // Debug logs to see what we're receiving
-    console.log('LanguageAssessment props - language:', language, 'displayName:', displayName);
-    
-    // Priority: displayName (should be clean) > language (might be raw) > fallback
-    if (displayName && displayName.trim() && !displayName.includes('=') && !displayName.includes('&')) {
-      return displayName;
-    }
-    
-    // If language looks clean (no URL params), use it
-    if (language && language.trim() && !language.includes('=') && !language.includes('&')) {
-      return language;
-    }
-    
-    // If we have URL parameter-like strings, try to extract the clean name
-    if (language && language.includes('=')) {
-      // Try to extract language name from URL-like string
-      const match = language.match(/lang=([^&]+)/);
-      if (match) {
-        return decodeURIComponent(match[1]);
-      }
-    }
-    
-    // Fallback
-    return 'English';
+    // Priority: displayName (should be clean) > language > fallback
+    return displayName || language || 'English';
   };
 
   // Simple function to load a passage
