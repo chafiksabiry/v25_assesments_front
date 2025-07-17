@@ -28,6 +28,34 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const currentRequestId = useRef(0);
   const currentLanguageRef = useRef(null);
 
+  // Get clean language name for display (always use displayName if available)
+  const getCleanLanguageName = () => {
+    // Debug logs to see what we're receiving
+    console.log('LanguageAssessment props - language:', language, 'displayName:', displayName);
+    
+    // Priority: displayName (should be clean) > language (might be raw) > fallback
+    if (displayName && displayName.trim() && !displayName.includes('=') && !displayName.includes('&')) {
+      return displayName;
+    }
+    
+    // If language looks clean (no URL params), use it
+    if (language && language.trim() && !language.includes('=') && !language.includes('&')) {
+      return language;
+    }
+    
+    // If we have URL parameter-like strings, try to extract the clean name
+    if (language && language.includes('=')) {
+      // Try to extract language name from URL-like string
+      const match = language.match(/lang=([^&]+)/);
+      if (match) {
+        return decodeURIComponent(match[1]);
+      }
+    }
+    
+    // Fallback
+    return 'English';
+  };
+
   // Simple function to load a passage
   const loadPassage = async (forceNew = false) => {
     // Generate unique request ID
@@ -37,23 +65,25 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
       setIsGenerating(true);
       setPassageError(null);
       
-      console.log(`[Request ${requestId}] ${forceNew ? 'Force generating' : 'Loading'} passage for language: ${language}`);
+      // Use the clean language name for API calls
+      const cleanLanguageName = getCleanLanguageName();
+      console.log(`[Request ${requestId}] ${forceNew ? 'Force generating' : 'Loading'} passage for language: ${cleanLanguageName}`);
       
       const passageData = forceNew 
-        ? await getNewPassage(language)
-        : await getPassage(language);
+        ? await getNewPassage(cleanLanguageName)
+        : await getPassage(cleanLanguageName);
       
       // Check if this is still the latest request
       if (requestId !== currentRequestId.current) {
-        console.log(`[Request ${requestId}] Ignoring outdated response for ${language}`);
+        console.log(`[Request ${requestId}] Ignoring outdated response for ${cleanLanguageName}`);
         return;
       }
       
       setPassage(passageData);
       setLanguageCode(passageData.code);
-      currentLanguageRef.current = language;
+      currentLanguageRef.current = cleanLanguageName;
       
-      console.log(`[Request ${requestId}] Passage loaded successfully for ${language}:`, passageData.title);
+      console.log(`[Request ${requestId}] Passage loaded successfully for ${cleanLanguageName}:`, passageData.title);
     } catch (error) {
       // Only show error if this is still the latest request
       if (requestId === currentRequestId.current) {
@@ -75,17 +105,18 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   useEffect(() => {
     // Small delay to prevent rapid consecutive calls
     const timer = setTimeout(() => {
+      const cleanLanguageName = getCleanLanguageName();
       // Only load if language has actually changed or no passage exists
-      if (currentLanguageRef.current !== language || !passage) {
-        console.log(`Loading passage for language change: ${currentLanguageRef.current} → ${language}`);
+      if (currentLanguageRef.current !== cleanLanguageName || !passage) {
+        console.log(`Loading passage for language change: ${currentLanguageRef.current} → ${cleanLanguageName}`);
         loadPassage();
       } else {
-        console.log(`Language ${language} already loaded, skipping`);
+        console.log(`Language ${cleanLanguageName} already loaded, skipping`);
       }
     }, 10); // Very short delay to debounce
 
     return () => clearTimeout(timer);
-  }, [language]);
+  }, [language, displayName]);
 
   const startRecording = async () => {
     try {
@@ -121,6 +152,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const analyzeRecording = async () => {
     setAnalyzing(true);
     try {
+      const cleanLanguageName = getCleanLanguageName();
       // Simulate AI analysis with GPT-3
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
@@ -154,7 +186,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
           },
           {
             role: "user",
-            content: `Reading passage: ${passage.text}\nSimulate assessment for ${language} language proficiency.`
+            content: `Reading passage: ${passage.text}\nSimulate assessment for ${cleanLanguageName} language proficiency.`
           }
         ],
         temperature: 0.7,
@@ -183,6 +215,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const analyzeAudio = async () => {
     setAnalyzing(true);
     try {
+      const cleanLanguageName = getCleanLanguageName();
       const formData = new FormData();
       // Append the audio blob to FormData
       const file = new File([audioBlob], `audio-${Date.now()}.opus`, { type: "audio/opus" });
@@ -201,7 +234,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
       const analysisData = {
         "fileUri": fileUri,
         "textToCompare": passage?.text,
-        "language": language
+        "language": cleanLanguageName
       };
       
       // Use the updated analyzeRecordingVertex function
@@ -297,7 +330,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
           <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
         </div>
-        <p className="text-gray-600">Generating creative content for {displayName || language} assessment...</p>
+        <p className="text-gray-600">Generating {getCleanLanguageName()} assessment content...</p>
       </div>
     );
   }
@@ -328,7 +361,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
               {passage?.title}
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Read the following passage aloud in {displayName || language}. Click "Start Recording" when ready.
+              Read the following passage aloud in {getCleanLanguageName()}. Click "Start Recording" when ready.
               {passage?.estimatedDuration && (
                 <span className="block mt-1 text-xs text-gray-400">
                   Estimated reading time: ~{passage.estimatedDuration} seconds
