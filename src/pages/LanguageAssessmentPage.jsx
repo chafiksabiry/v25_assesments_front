@@ -1,14 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import LanguageAssessment from '../components/LanguageAssessment';
 import { useAssessment } from '../context/AssessmentContext';
 import { isAuthenticated, returnToParentApp, getLanguageIsoCode } from '../utils/authUtils';
 import Notification from '../components/Notification';
 
 function LanguageAssessmentPage() {
-  const { language } = useParams();
+  const [searchParams] = useSearchParams();
   const { setCurrentAssessmentType, saveLanguageAssessment, setUserId } = useAssessment();
   const [notification, setNotification] = useState(null);
+  
+  // Get language and code from URL query parameters
+  // Priority: 'lang' parameter (preferred) > 'language' parameter (legacy)
+  const langFromQuery = searchParams.get('lang');
+  const languageFromQuery = searchParams.get('language');
+  const codeFromQuery = searchParams.get('code');
+  
+  // Determine the effective language and code
+  const effectiveLanguage = langFromQuery || languageFromQuery || 'English';
+  const effectiveCode = codeFromQuery;
+  
+  // Check if we have all required parameters
+  const hasRequiredParams = (langFromQuery || languageFromQuery) && codeFromQuery;
   
   // Set assessment type and check authentication on mount
   useEffect(() => {
@@ -17,13 +30,15 @@ function LanguageAssessmentPage() {
     // Check if the user is authenticated
     if (!isAuthenticated() && import.meta.env.VITE_RUN_MODE !== 'standalone') {
       console.warn('No authentication data found. Using demo mode.');
-      // You can add logic to redirect to login here if needed
     }
     
-    // Try to get the language ISO code ahead of time
-    const isoCode = getLanguageIsoCode(language);
-    console.log(`Language: ${language}, ISO code: ${isoCode || 'unknown (will be determined by API)'}`);
-  }, [setCurrentAssessmentType, language]);
+    // Log the method being used
+    if (hasRequiredParams) {
+      console.log(`✅ Using query parameters - Language: ${effectiveLanguage}, Code: ${effectiveCode}`);
+    } else {
+      console.warn('⚠️ No language parameters specified, using default: English');
+    }
+  }, [setCurrentAssessmentType, effectiveLanguage, effectiveCode, hasRequiredParams]);
   
   // Helper function to convert score to CEFR level - copied from LanguageAssessment component
   const mapScoreToCEFR = (score) => {
@@ -38,11 +53,9 @@ function LanguageAssessmentPage() {
   const handleComplete = async (results) => {
     console.log('Assessment completed:', results);
     
-    // Get the language from the URL parameter
-    const languageParam = decodedLanguage;
-    
-    // Get the ISO code for the language
-    const isoCode = getLanguageIsoCode(languageParam) || results.language_code;
+    // Use query parameters if provided, otherwise use existing logic
+    const languageParam = effectiveLanguage;
+    const isoCode = effectiveCode || getLanguageIsoCode(languageParam) || results.language_code;
     
     // Get the CEFR level from the results for proficiency
     const proficiency = mapScoreToCEFR(results.overall.score);
@@ -68,15 +81,39 @@ function LanguageAssessmentPage() {
     }
   };
   
-  // Decode URI component in case the language contains special characters
-  const decodedLanguage = React.useMemo(() => {
-    try {
-      return decodeURIComponent(language || 'English');
-    } catch (e) {
-      console.error('Error decoding language parameter:', e);
-      return 'English';
-    }
-  }, [language]);
+  // Get the proper language name for display
+  const [displayLanguageName, setDisplayLanguageName] = useState(effectiveLanguage);
+  
+  // Update display name from query parameters
+  useEffect(() => {
+    setDisplayLanguageName(effectiveLanguage);
+    console.log('Using language parameter:', effectiveLanguage);
+  }, [effectiveLanguage]);
+  
+  // Error state when required parameters are missing
+  if (!hasRequiredParams) {
+    return (
+      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <h3 className="text-red-600 text-lg font-semibold mb-2">Missing Required Parameters</h3>
+            <p className="text-gray-700 mb-4">
+              You must provide both <code>lang</code> (or <code>language</code>) and <code>code</code> parameters.
+            </p>
+            <p className="text-sm text-gray-600 mb-4">
+              <strong>Example:</strong> <code>/assessment/language?lang=English&code=en</code>
+            </p>
+            <button
+              onClick={() => window.location.href = '/assessment/language?lang=English&code=en'}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to English Assessment
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -84,7 +121,7 @@ function LanguageAssessmentPage() {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
           <div className="bg-blue-700 px-6 py-4 flex justify-between items-center">
             <h1 className="text-2xl font-bold text-white">
-              {decodedLanguage} Assessment
+              {displayLanguageName} Assessment
             </h1>
             <button 
               onClick={returnToParentApp}
@@ -96,7 +133,8 @@ function LanguageAssessmentPage() {
           
           <div className="p-6">
             <LanguageAssessment 
-              language={decodedLanguage} 
+              language={effectiveLanguage} 
+              displayName={displayLanguageName}
               onComplete={handleComplete}
               onExit={returnToParentApp}
             />

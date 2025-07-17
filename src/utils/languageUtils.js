@@ -1,143 +1,262 @@
-const passages = {
-  English: {
-    text: `The digital revolution has transformed how we live and work. In today's interconnected world, technology plays a pivotal role in shaping our daily experiences. From artificial intelligence to renewable energy, innovations continue to drive progress and create new opportunities. As we navigate these changes, it's crucial to understand both the benefits and challenges of our increasingly digital society.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "en"
-  },
-  French: {
-    text: `La révolution numérique a transformé notre façon de vivre et de travailler. Dans le monde interconnecté d'aujourd'hui, la technologie joue un rôle central dans nos expériences quotidiennes. De l'intelligence artificielle aux énergies renouvelables, les innovations continuent de stimuler le progrès et de créer de nouvelles opportunités. Alors que nous naviguons à travers ces changements, il est crucial de comprendre à la fois les avantages et les défis de notre société de plus en plus numérique.`,
-    estimatedDuration: 50,
-    difficulty: "intermediate",
-    code: "fr"
-  },
-  Anglais: {
-    text: `The digital revolution has transformed how we live and work. In today's interconnected world, technology plays a pivotal role in shaping our daily experiences. From artificial intelligence to renewable energy, innovations continue to drive progress and create new opportunities. As we navigate these changes, it's crucial to understand both the benefits and challenges of our increasingly digital society.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "en"
-  },
-  Français: {
-    text: `La révolution numérique a transformé notre façon de vivre et de travailler. Dans le monde interconnecté d'aujourd'hui, la technologie joue un rôle central dans nos expériences quotidiennes. De l'intelligence artificielle aux énergies renouvelables, les innovations continuent de stimuler le progrès et de créer de nouvelles opportunités. Alors que nous naviguons à travers ces changements, il est crucial de comprendre à la fois les avantages et les défis de notre société de plus en plus numérique.`,
-    estimatedDuration: 50,
-    difficulty: "intermediate",
-    code: "fr"
-  },
-  Arabic: {
-    text: `لقد غيرت الثورة الرقمية طريقة حياتنا وعملنا. في عالم اليوم المترابط، تلعب التكنولوجيا دوراً محورياً في تشكيل تجاربنا اليومية. من الذكاء الاصطناعي إلى الطاقة المتجددة، تواصل الابتكارات دفع التقدم وخلق فرص جديدة. بينما نتنقل عبر هذه التغييرات، من الضروري فهم كل من فوائد وتحديات مجتمعنا الرقمي المتزايد.`,
-    estimatedDuration: 55,
-    difficulty: "intermediate",
-    code: "ar"
-  },
-  Arabe: {
-    text: `لقد غيرت الثورة الرقمية طريقة حياتنا وعملنا. في عالم اليوم المترابط، تلعب التكنولوجيا دوراً محورياً في تشكيل تجاربنا اليومية. من الذكاء الاصطناعي إلى الطاقة المتجددة، تواصل الابتكارات دفع التقدم وخلق فرص جديدة. بينما نتنقل عبر هذه التغييرات، من الضروري فهم كل من فوائد وتحديات مجتمعنا الرقمي المتزايد.`,
-    estimatedDuration: 55,
-    difficulty: "intermediate",
-    code: "ar"
-  },
-  عربي: {
-    text: `لقد غيرت الثورة الرقمية طريقة حياتنا وعملنا. في عالم اليوم المترابط، تلعب التكنولوجيا دوراً محورياً في تشكيل تجاربنا اليومية. من الذكاء الاصطناعي إلى الطاقة المتجددة، تواصل الابتكارات دفع التقدم وخلق فرص جديدة. بينما نتنقل عبر هذه التغييرات، من الضروري فهم كل من فوائد وتحديات مجتمعنا الرقمي المتزايد.`,
-    estimatedDuration: 55,
-    difficulty: "intermediate",
-    code: "ar"
-  },
-  Spanish: {
-    text: `La revolución digital ha transformado nuestra forma de vivir y trabajar. En el mundo interconectado de hoy, la tecnología juega un papel fundamental en nuestras experiencias diarias. Desde la inteligencia artificial hasta las energías renovables, las innovaciones continúan impulsando el progreso y creando nuevas oportunidades. Mientras navegamos por estos cambios, es crucial entender tanto los beneficios como los desafíos de nuestra sociedad cada vez más digital.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "es"
-  },
-  Español: {
-    text: `La revolución digital ha transformado nuestra forma de vivir y trabajar. En el mundo interconectado de hoy, la tecnología juega un papel fundamental en nuestras experiencias diarias. Desde la inteligencia artificial hasta las energías renovables, las innovaciones continúan impulsando el progreso y creando nuevas oportunidades. Mientras navegamos por estos cambios, es crucial entender tanto los beneficios como los desafíos de nuestra sociedad cada vez más digital.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "es"
-  },
-  Espagnol: {
-    text: `La revolución digital ha transformado nuestra forma de vivir y trabajar. En el mundo interconectado de hoy, la tecnología juega un papel fundamental en nuestras experiencias diarias. Desde la inteligencia artificial hasta las energías renovables, las innovaciones continúan impulsando el progreso y creando nuevas oportunidades. Mientras navegamos por estos cambios, es crucial entender tanto los beneficios como los desafíos de nuestra sociedad cada vez más digital.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "es"
-  },
-  German: {
-    text: `Die digitale Revolution hat unsere Art zu leben und zu arbeiten verändert. In der vernetzten Welt von heute spielt Technologie eine zentrale Rolle in unseren täglichen Erfahrungen. Von künstlicher Intelligenz bis hin zu erneuerbaren Energien treiben Innovationen den Fortschritt voran und schaffen neue Möglichkeiten. Während wir durch diese Veränderungen navigieren, ist es entscheidend, sowohl die Vorteile als auch die Herausforderungen unserer zunehmend digitalen Gesellschaft zu verstehen.`,
-    estimatedDuration: 55,
-    difficulty: "intermediate",
-    code: "de"
-  },
-  Deutsch: {
-    text: `Die digitale Revolution hat unsere Art zu leben und zu arbeiten verändert. In der vernetzten Welt von heute spielt Technologie eine zentrale Rolle in unseren täglichen Erfahrungen. Von künstlicher Intelligenz bis hin zu erneuerbaren Energien treiben Innovationen den Fortschritt voran und schaffen neue Möglichkeiten. Während wir durch diese Veränderungen navigieren, ist es entscheidend, sowohl die Vorteile als auch die Herausforderungen unserer zunehmend digitalen Gesellschaft zu verstehen.`,
-    estimatedDuration: 55,
-    difficulty: "intermediate",
-    code: "de"
-  },
-  Chinese: {
-    text: `数字革命已经改变了我们的生活和工作方式。在当今互联互通的世界中，技术在塑造我们的日常体验方面发挥着关键作用。从人工智能到可再生能源，创新不断推动进步并创造新机遇。在我们应对这些变化的过程中，理解我们日益数字化的社会的优势和挑战至关重要。`,
-    estimatedDuration: 40,
-    difficulty: "intermediate",
-    code: "zh"
-  },
-  中文: {
-    text: `数字革命已经改变了我们的生活和工作方式。在当今互联互通的世界中，技术在塑造我们的日常体验方面发挥着关键作用。从人工智能到可再生能源，创新不断推动进步并创造新机遇。在我们应对这些变化的过程中，理解我们日益数字化的社会的优势和挑战至关重要。`,
-    estimatedDuration: 40,
-    difficulty: "intermediate",
-    code: "zh"
-  },
-  Japanese: {
-    text: `デジタル革命は私たちの生活と仕事の仕方を変えました。今日の相互接続された世界では、テクノロジーが私たちの日常体験を形作る上で重要な役割を果たしています。人工知能から再生可能エネルギーまで、革新は進歩を推進し、新しい機会を生み出し続けています。これらの変化に対応する中で、ますますデジタル化する社会の利点と課題の両方を理解することが重要です。`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "ja"
-  },
-  日本語: {
-    text: `デジタル革命は私たちの生活と仕事の仕方を変えました。今日の相互接続された世界では、テクノロジーが私たちの日常体験を形作る上で重要な役割を果たしています。人工知能から再生可能エネルギーまで、革新は進歩を推進し、新しい機会を生み出し続けています。これらの変化に対応する中で、ますますデジタル化する社会の利点と課題の両方を理解することが重要です。`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "ja"
-  },
-  Korean: {
-    text: `디지털 혁명은 우리의 생활과 일하는 방식을 변화시켰습니다. 오늘날의 상호 연결된 세계에서 기술은 우리의 일상적인 경험을 형성하는 데 중추적인 역할을 합니다. 인공지능에서 재생 에너지에 이르기까지, 혁신은 계속해서 진보를 이끌고 새로운 기회를 창출합니다. 이러한 변화를 헤쳐나가면서, 점점 더 디지털화되는 우리 사회의 이점과 과제를 모두 이해하는 것이 중요합니다.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "ko"
-  },
-  한국어: {
-    text: `디지털 혁명은 우리의 생활과 일하는 방식을 변화시켰습니다. 오늘날의 상호 연결된 세계에서 기술은 우리의 일상적인 경험을 형성하는 데 중추적인 역할을 합니다. 인공지능에서 재생 에너지에 이르기까지, 혁신은 계속해서 진보를 이끌고 새로운 기회를 창출합니다. 이러한 변화를 헤쳐나가면서, 점점 더 디지털화되는 우리 사회의 이점과 과제를 모두 이해하는 것이 중요합니다.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "ko"
-  },
-  Italian: {
-    text: `La rivoluzione digitale ha trasformato il nostro modo di vivere e lavorare. Nel mondo interconnesso di oggi, la tecnologia svolge un ruolo fondamentale nel plasmare le nostre esperienze quotidiane. Dall'intelligenza artificiale alle energie rinnovabili, le innovazioni continuano a guidare il progresso e a creare nuove opportunità. Mentre navighiamo attraverso questi cambiamenti, è cruciale comprendere sia i benefici che le sfide della nostra società sempre più digitale.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "it"
-  },
-  Italiano: {
-    text: `La rivoluzione digitale ha trasformato il nostro modo di vivere e lavorare. Nel mondo interconnesso di oggi, la tecnologia svolge un ruolo fondamentale nel plasmare le nostre esperienze quotidiane. Dall'intelligenza artificiale alle energie rinnovabili, le innovazioni continuano a guidare il progresso e a creare nuove opportunità. Mentre navighiamo attraverso questi cambiamenti, è cruciale comprendere sia i benefici che le sfide della nostra società sempre più digitale.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "it"
-  },
-  Portuguese: {
-    text: `A revolução digital transformou nossa forma de viver e trabalhar. No mundo interconectado de hoje, a tecnologia desempenha um papel fundamental em moldar nossas experiências diárias. Da inteligência artificial às energias renováveis, as inovações continuam impulsionando o progresso e criando novas oportunidades. Enquanto navegamos por essas mudanças, é crucial entender tanto os benefícios quanto os desafios de nossa sociedade cada vez mais digital.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "pt"
-  },
-  Português: {
-    text: `A revolução digital transformou nossa forma de viver e trabalhar. No mundo interconectado de hoje, a tecnologia desempenha um papel fundamental em moldar nossas experiências diárias. Da inteligência artificial às energias renováveis, as inovações continuam impulsionando o progresso e criando novas oportunidades. Enquanto navegamos por essas mudanças, é crucial entender tanto os benefícios quanto os desafios de nossa sociedade cada vez mais digital.`,
-    estimatedDuration: 45,
-    difficulty: "intermediate",
-    code: "pt"
+/**
+ * Language code to full name mapping
+ * Maps ISO 639-1 two-letter codes to English language names
+ */
+const LANGUAGE_CODE_TO_NAME = {
+  // Major world languages
+  'en': 'English',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'it': 'Italian',
+  'pt': 'Portuguese',
+  'ru': 'Russian',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'zh': 'Chinese',
+  'ar': 'Arabic',
+  'hi': 'Hindi',
+  'tr': 'Turkish',
+  'pl': 'Polish',
+  'nl': 'Dutch',
+  'sv': 'Swedish',
+  'da': 'Danish',
+  'no': 'Norwegian',
+  'fi': 'Finnish',
+  'el': 'Greek',
+  'he': 'Hebrew',
+  'th': 'Thai',
+  'vi': 'Vietnamese',
+  'id': 'Indonesian',
+  'ms': 'Malay',
+  'tl': 'Filipino',
+  'cs': 'Czech',
+  'sk': 'Slovak',
+  'hu': 'Hungarian',
+  'ro': 'Romanian',
+  'bg': 'Bulgarian',
+  'hr': 'Croatian',
+  'sr': 'Serbian',
+  'sl': 'Slovenian',
+  'et': 'Estonian',
+  'lv': 'Latvian',
+  'lt': 'Lithuanian',
+  'uk': 'Ukrainian',
+  'be': 'Belarusian',
+  'ka': 'Georgian',
+  'hy': 'Armenian',
+  'az': 'Azerbaijani',
+  'kk': 'Kazakh',
+  'ky': 'Kyrgyz',
+  'uz': 'Uzbek',
+  'mn': 'Mongolian',
+  'ne': 'Nepali',
+  'si': 'Sinhala',
+  'ta': 'Tamil',
+  'te': 'Telugu',
+  'kn': 'Kannada',
+  'ml': 'Malayalam',
+  'bn': 'Bengali',
+  'gu': 'Gujarati',
+  'pa': 'Punjabi',
+  'ur': 'Urdu',
+  'fa': 'Persian',
+  'ps': 'Pashto',
+  'ku': 'Kurdish',
+  'am': 'Amharic',
+  'ti': 'Tigrinya',
+  'om': 'Oromo',
+  'so': 'Somali',
+  'sw': 'Swahili',
+  'zu': 'Zulu',
+  'xh': 'Xhosa',
+  'af': 'Afrikaans',
+  'sq': 'Albanian',
+  'eu': 'Basque',
+  'ca': 'Catalan',
+  'gl': 'Galician',
+  'is': 'Icelandic',
+  'ga': 'Irish',
+  'mt': 'Maltese',
+  'cy': 'Welsh',
+  'br': 'Breton',
+  'gd': 'Scottish Gaelic',
+  'fo': 'Faroese',
+  'lb': 'Luxembourgish',
+  'rm': 'Romansh',
+  'mi': 'Maori',
+  'sm': 'Samoan',
+  'to': 'Tongan',
+  'fj': 'Fijian',
+  'haw': 'Hawaiian',
+  'mg': 'Malagasy',
+  'ny': 'Chichewa',
+  'sn': 'Shona',
+  'st': 'Sesotho',
+  'tn': 'Setswana',
+  'ts': 'Tsonga',
+  've': 'Venda',
+  'ss': 'Swati',
+  'nr': 'Ndebele',
+  'nso': 'Northern Sotho',
+  'wo': 'Wolof',
+  'yo': 'Yoruba',
+  'ig': 'Igbo',
+  'ha': 'Hausa',
+  'ff': 'Fulah',
+  'lg': 'Luganda',
+  'rw': 'Kinyarwanda',
+  'rn': 'Kirundi',
+  'ln': 'Lingala',
+  'sg': 'Sango',
+  'kg': 'Kongo',
+  'ak': 'Akan',
+  'tw': 'Twi',
+  'bm': 'Bambara',
+  'my': 'Burmese',
+  'km': 'Khmer',
+  'lo': 'Lao',
+  'dz': 'Dzongkha',
+  'bo': 'Tibetan',
+  'ug': 'Uyghur',
+  'yi': 'Yiddish',
+  'ji': 'Yiddish', // Alternative code
+  'eo': 'Esperanto',
+  'ia': 'Interlingua',
+  'ie': 'Interlingue',
+  'io': 'Ido',
+  'vo': 'Volapük',
+  'la': 'Latin',
+  'sa': 'Sanskrit',
+  'pi': 'Pali',
+  'grc': 'Ancient Greek',
+  'got': 'Gothic',
+  'non': 'Old Norse',
+  'gmh': 'Middle High German',
+  'ang': 'Old English',
+  'sga': 'Old Irish',
+  'goh': 'Old High German',
+  'osx': 'Old Saxon',
+  'chu': 'Church Slavonic'
+};
+
+/**
+ * Convert language code to full language name in English using OpenAI
+ * @param {string} languageCode - ISO 639-1 language code
+ * @returns {Promise<string>} Full language name in English
+ */
+const getLanguageNameFromAI = async (languageCode) => {
+  try {
+    // Import OpenAI dynamically to avoid circular dependencies
+    const { default: OpenAI } = await import('openai');
+    
+    const openai = new OpenAI({
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true
+    });
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `You are a language expert. Given an ISO 639-1 language code, return ONLY the corresponding full language name in English.
+          For example:
+          - "fr" -> "French"
+          - "ar" -> "Arabic"
+          - "tr" -> "Turkish"
+          - "sw" -> "Swahili"
+          Return ONLY the language name, nothing else.`
+        },
+        {
+          role: "user",
+          content: languageCode
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 20
+    });
+
+    const languageName = response.choices[0].message.content.trim();
+    
+    // Basic validation - should be a reasonable language name
+    if (languageName && languageName.length > 1 && languageName.length < 50) {
+      return languageName;
+    }
+    
+    throw new Error(`Invalid language name returned: ${languageName}`);
+  } catch (error) {
+    console.error('Error getting language name from AI:', error);
+    // Fallback to uppercase code if AI fails
+    return languageCode.toUpperCase();
   }
 };
 
-export const getReadingPassage = (language) => {
-  // Return the passage for the specified language
-  if (!passages[language]) {
-    console.error(`No passage found for language: ${language}`);
-    throw new Error(`No passage found for language: ${language}`);
+/**
+ * Convert language code to full language name in English
+ * Uses predefined map first, then OpenAI as fallback
+ * @param {string} languageCode - ISO 639-1 language code (e.g., 'fr', 'ar', 'tr')
+ * @returns {Promise<string>|string} Full language name in English
+ */
+export const getLanguageNameFromCode = async (languageCode) => {
+  if (!languageCode) return 'Unknown Language';
+  
+  const normalizedCode = languageCode.toLowerCase().trim();
+  
+  // First, try the predefined map (fast)
+  if (LANGUAGE_CODE_TO_NAME[normalizedCode]) {
+    return LANGUAGE_CODE_TO_NAME[normalizedCode];
   }
-  return passages[language];
+  
+  // If not found in map, use OpenAI as fallback (intelligent)
+  console.log(`Language code "${normalizedCode}" not found in predefined map, using OpenAI fallback...`);
+  return await getLanguageNameFromAI(normalizedCode);
+};
+
+/**
+ * Get language name from either code or full name
+ * This function handles both cases: when we receive a code or when we receive a full name
+ * @param {string} input - Either a language code or full language name
+ * @returns {Promise<string>} Full language name in English
+ */
+export const normalizeLanguageName = async (input) => {
+  if (!input) return 'English';
+  
+  const trimmedInput = input.trim();
+  
+  // If it's already a full name (more than 2 characters), return as is
+  if (trimmedInput.length > 2) {
+    // Capitalize first letter
+    return trimmedInput.charAt(0).toUpperCase() + trimmedInput.slice(1).toLowerCase();
+  }
+  
+  // If it's 2 characters or less, treat as language code
+  return await getLanguageNameFromCode(trimmedInput);
+};
+
+/**
+ * Check if input is a language code (2-3 characters)
+ * @param {string} input - Input to check
+ * @returns {boolean} True if input appears to be a language code
+ */
+export const isLanguageCode = (input) => {
+  if (!input) return false;
+  const trimmed = input.trim();
+  return trimmed.length >= 2 && trimmed.length <= 3 && /^[a-zA-Z]+$/.test(trimmed);
+};
+
+/**
+ * Get all supported language codes
+ * @returns {string[]} Array of supported language codes
+ */
+export const getSupportedLanguageCodes = () => {
+  return Object.keys(LANGUAGE_CODE_TO_NAME);
+};
+
+/**
+ * Get all supported language names
+ * @returns {string[]} Array of supported language names
+ */
+export const getSupportedLanguageNames = () => {
+  return Object.values(LANGUAGE_CODE_TO_NAME);
 };
