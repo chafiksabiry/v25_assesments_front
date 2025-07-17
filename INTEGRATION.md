@@ -11,13 +11,13 @@ The Assessment Micro-Frontend provides standalone assessment experiences for:
 
 ## Integration Methods
 
-### 1. Direct URL Navigation
+### Language Assessment with Query Parameters
 
-The simplest integration method is to redirect users to a specific assessment URL.
+Use proper URL query parameter syntax to pass language information:
 
 #### Language Assessment URL Format:
 ```
-https://your-assessment-domain.com/assessment/language/{LANGUAGE_NAME}?userId={USER_ID}&token={AUTH_TOKEN}&returnUrl={RETURN_URL}
+https://your-assessment-domain.com/assessment/language?lang={LANGUAGE_NAME}&code={ALPHA2_CODE}&userId={USER_ID}&token={AUTH_TOKEN}&returnUrl={RETURN_URL}
 ```
 
 #### Contact Center Assessment URL Format:
@@ -29,25 +29,13 @@ https://your-assessment-domain.com/assessment/contact-center/{SKILL_ID}?userId={
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
+| `lang`      | Yes | The language name (e.g., "English", "French", "Arabic") |
+| `code`      | Yes | ISO 639-1 language code (e.g., "en", "fr", "ar") |
 | `userId`    | Yes | The unique identifier for the user taking the assessment |
 | `token`     | Yes | Authentication token for API access |
 | `returnUrl` | Yes | URL to return to after assessment completion or exit |
 
-#### Example:
-```
-https://assessments.example.com/assessment/language/Arabic?userId=12345&token=jwt.token.here&returnUrl=https://main-app.example.com/dashboard
-```
-
-### 2. ✨ RECOMMENDED: Clean URL with Direct Parameters (No Redundancy)
-
-**NEW and improved approach** - Pass language name and ISO code directly without redundancy:
-
-#### Clean Language Assessment URL Format:
-```
-https://your-assessment-domain.com/assessment/language?lang={LANGUAGE_NAME}&code={ALPHA2_CODE}&userId={USER_ID}&token={AUTH_TOKEN}&returnUrl={RETURN_URL}
-```
-
-#### Direct Parameters:
+#### Examples:
 
 | Parameter | Required | Description | Example |
 |-----------|----------|-------------|---------|
@@ -106,55 +94,26 @@ https://assessments.example.com/assessment/language?lang=Arabic&code=ar&userId=1
 5. **📏 Cleaner URLs** - More professional and easier to understand
 6. **🔧 Better reliability** - No dependency on external AI services for basic navigation
 
-### 3. Legacy URLs (Still Supported)
+### Parameter Priority
 
-For backward compatibility, these legacy formats are still supported:
+The system handles URL parameters with the following priority:
 
-#### Legacy with redundant 'language' parameter:
-```
-/assessment/language?language=English&code=en   # redundant: "language" appears twice
-```
+1. **`lang` parameter** (recommended): 
+   - `/assessment/language?lang=English&code=en`
+   - Preferred approach, cleaner URLs
 
-#### Legacy with path + query parameters (has redundancy):
-```
-/assessment/language/English?language=English&code=en   # redundant: "English" appears twice
-```
+2. **`language` parameter** (legacy support):
+   - `/assessment/language?language=English&code=en`  
+   - Backward compatibility for existing integrations
 
-#### Legacy without query parameters (uses AI/mapping):
-```
-/assessment/language/English
-```
-
-#### Fallback Behavior:
-
-The system automatically handles different URL formats with priority:
-
-1. **Clean route** (recommended): `/assessment/language?lang=English&code=en`
-   - Uses `lang` parameter (preferred)
-   - Fastest and most reliable
-
-2. **Clean route with legacy parameter**: `/assessment/language?language=English&code=en`
-   - Uses `language` parameter (backward compatibility)
-   - Still clean but has redundancy with URL path
-
-3. **Legacy with query params**: `/assessment/language/English?lang=English&code=en`  
-   - Uses query parameters, ignores path parameter
-   - Has redundancy but works
-
-4. **Legacy without query params**: `/assessment/language/English`
-   - Uses existing AI/mapping logic to determine language code
-   - Slower, requires AI processing
-
-This ensures backward compatibility with existing integrations while encouraging adoption of the cleaner approach.
-
-### 4. IFrame Integration
+### IFrame Integration
 
 You can embed the assessment as an iframe within your application:
 
 ```html
-<!-- ✅ RECOMMENDED: Clean URL with 'lang' parameter -->
+<!-- Example: Spanish language assessment -->
 <iframe
-  src="https://your-assessment-domain.com/assessment/language?lang=Spanish&code=es&userId=12345&token=jwt.token.here"
+  src="https://your-assessment-domain.com/assessment/language?lang=Spanish&code=es&userId=12345&token=jwt.token.here&returnUrl=https://main-app.example.com/dashboard"
   width="100%"
   height="700px"
   frameborder="0"
