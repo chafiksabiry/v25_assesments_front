@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { getPassage } from '../utils/passageManager';
+import { getPassage, getNewPassage } from '../utils/passageManager';
 import { analyzeRecordingVertex, uploadRecording } from '../lib/api/vertex';
 import OpenAI from 'openai';
 import { useAssessment } from '../context/AssessmentContext';
@@ -9,7 +9,7 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true
 });
 
-function LanguageAssessment({ language, onComplete, onExit }) {
+function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const { loading: assessmentLoading, error: assessmentError } = useAssessment();
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -17,33 +17,84 @@ function LanguageAssessment({ language, onComplete, onExit }) {
   const [results, setResults] = useState(null);
   const [passage, setPassage] = useState(null);
   const [passageError, setPassageError] = useState(null);
-  const [isTranslating, setIsTranslating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [previousScores, setPreviousScores] = useState([]);
   const [languageCode, setLanguageCode] = useState(null);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
+  
+  // Protection against race conditions
+  const currentRequestId = useRef(0);
+  const currentLanguageRef = useRef(null);
 
-  useEffect(() => {
-    // Load reading passage when component mounts
-    const loadPassage = async () => {
-      try {
-        setIsTranslating(true);
-        setPassageError(null);
-        const passageData = await getPassage(language);
-        setPassage(passageData);
-        setLanguageCode(passageData.code);
-      } catch (error) {
-        console.error('Error loading passage:', error);
+  // Get clean language name for display (displayName should always be clean now)
+  const getCleanLanguageName = () => {
+    // Priority: displayName (should be clean) > language > fallback
+    return displayName || language || 'English';
+  };
+
+  // Simple function to load a passage
+  const loadPassage = async (forceNew = false) => {
+    // Generate unique request ID
+    const requestId = ++currentRequestId.current;
+    
+    try {
+      setIsGenerating(true);
+      setPassageError(null);
+      
+      // Use the clean language name for API calls
+      const cleanLanguageName = getCleanLanguageName();
+      console.log(`[Request ${requestId}] ${forceNew ? 'Force generating' : 'Loading'} passage for language: ${cleanLanguageName}`);
+      
+      const passageData = forceNew 
+        ? await getNewPassage(cleanLanguageName)
+        : await getPassage(cleanLanguageName);
+      
+      // Check if this is still the latest request
+      if (requestId !== currentRequestId.current) {
+        console.log(`[Request ${requestId}] Ignoring outdated response for ${cleanLanguageName}`);
+        return;
+      }
+      
+      setPassage(passageData);
+      setLanguageCode(passageData.code);
+      currentLanguageRef.current = cleanLanguageName;
+      
+      console.log(`[Request ${requestId}] Passage loaded successfully for ${cleanLanguageName}:`, passageData.title);
+    } catch (error) {
+      // Only show error if this is still the latest request
+      if (requestId === currentRequestId.current) {
+        console.error(`[Request ${requestId}] Error loading passage:`, error);
         setPassageError(error.message);
         setPassage(null);
-      } finally {
-        setIsTranslating(false);
+      } else {
+        console.log(`[Request ${requestId}] Ignoring error from outdated request`);
       }
-    };
+    } finally {
+      // Only update loading state if this is still the latest request
+      if (requestId === currentRequestId.current) {
+        setIsGenerating(false);
+      }
+    }
+  };
 
-    loadPassage();
-  }, [language]);
+  // Load passage when component mounts or language changes
+  useEffect(() => {
+    // Small delay to prevent rapid consecutive calls
+    const timer = setTimeout(() => {
+      const cleanLanguageName = getCleanLanguageName();
+      // Only load if language has actually changed or no passage exists
+      if (currentLanguageRef.current !== cleanLanguageName || !passage) {
+        console.log(`Loading passage for language change: ${currentLanguageRef.current} → ${cleanLanguageName}`);
+        loadPassage();
+      } else {
+        console.log(`Language ${cleanLanguageName} already loaded, skipping`);
+      }
+    }, 10); // Very short delay to debounce
+
+    return () => clearTimeout(timer);
+  }, [language, displayName]);
 
   const startRecording = async () => {
     try {
@@ -79,6 +130,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
   const analyzeRecording = async () => {
     setAnalyzing(true);
     try {
+      const cleanLanguageName = getCleanLanguageName();
       // Simulate AI analysis with GPT-3
       const response = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
@@ -112,7 +164,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
           },
           {
             role: "user",
-            content: `Reading passage: ${passage.text}\nSimulate assessment for ${language} language proficiency.`
+            content: `Reading passage: ${passage.text}\nSimulate assessment for ${cleanLanguageName} language proficiency.`
           }
         ],
         temperature: 0.7,
@@ -141,6 +193,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
   const analyzeAudio = async () => {
     setAnalyzing(true);
     try {
+      const cleanLanguageName = getCleanLanguageName();
       const formData = new FormData();
       // Append the audio blob to FormData
       const file = new File([audioBlob], `audio-${Date.now()}.opus`, { type: "audio/opus" });
@@ -159,7 +212,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
       const analysisData = {
         "fileUri": fileUri,
         "textToCompare": passage?.text,
-        "language": language
+        "language": cleanLanguageName
       };
       
       // Use the updated analyzeRecordingVertex function
@@ -226,10 +279,13 @@ function LanguageAssessment({ language, onComplete, onExit }) {
     );
   };
 
-  const retakeAssessment = () => {
+  const retakeAssessment = async () => {
     setAudioBlob(null);
     setResults(null);
     // Don't reset previousScores or attempts - we want to track these
+    
+    // Generate a new passage for variety
+    await loadPassage(true);
   };
 
   const completeAssessment = () => {
@@ -244,15 +300,15 @@ function LanguageAssessment({ language, onComplete, onExit }) {
     }
   };
 
-  // If still loading passage translation
-  if (isTranslating) {
+  // If still loading passage generation
+  if (isGenerating) {
     return (
       <div className="text-center py-12">
         <div className="animate-pulse mb-4">
           <div className="h-8 bg-gray-200 rounded w-3/4 mx-auto mb-4"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
         </div>
-        <p className="text-gray-600">Preparing {language} assessment...</p>
+        <p className="text-gray-600">Generating {getCleanLanguageName()} assessment content...</p>
       </div>
     );
   }
@@ -283,7 +339,12 @@ function LanguageAssessment({ language, onComplete, onExit }) {
               {passage?.title}
             </h2>
             <p className="text-sm text-gray-500 mb-4">
-              Read the following passage aloud in {language}. Click "Start Recording" when ready.
+              Read the following passage aloud in {getCleanLanguageName()}. Click "Start Recording" when ready.
+              {passage?.estimatedDuration && (
+                <span className="block mt-1 text-xs text-gray-400">
+                  Estimated reading time: ~{passage.estimatedDuration} seconds
+                </span>
+              )}
             </p>
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <p className="text-gray-800 leading-relaxed">{passage?.text}</p>
@@ -296,7 +357,7 @@ function LanguageAssessment({ language, onComplete, onExit }) {
                 onClick={recording ? stopRecording : startRecording}
                 className={`px-6 py-3 rounded-full text-white font-medium flex items-center ${recording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
                   }`}
-                disabled={isTranslating}
+                disabled={isGenerating}
               >
                 {recording ? (
                   <>
@@ -434,9 +495,20 @@ function LanguageAssessment({ language, onComplete, onExit }) {
           <div className="flex justify-between pt-4">
             <button
               onClick={retakeAssessment}
-              className="px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+              className="px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isGenerating}
             >
-              Retake Assessment
+              {isGenerating ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Generating New Text...
+                </span>
+              ) : (
+                'Retake with New Text'
+              )}
             </button>
 
             <div className="space-x-3">
