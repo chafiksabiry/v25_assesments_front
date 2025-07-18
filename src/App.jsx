@@ -22,15 +22,15 @@ function App() {
     <AssessmentProvider>
       <Router basename={basename}>
         <Routes>
-          {/* Language assessment route */}
-          <Route path="/assessment/language/:language" element={<LanguageAssessmentPage />} />
+          {/* Language assessment route with query parameters */}
+          <Route path="/assessment/language" element={<LanguageAssessmentPage />} />
           
           {/* Contact center assessment route */}
           <Route path="/assessment/contact-center/:skillId" element={<ContactCenterAssessmentPage />} />
           
-          {/* Redirects */}
-          <Route path="/" element={<Navigate to="/assessment/language/English" replace />} />
-          <Route path="*" element={<Navigate to="/assessment/language/English" replace />} />
+          {/* Default redirects using proper query parameter syntax */}
+          <Route path="/" element={<Navigate to="/assessment/language?lang=English&code=en" replace />} />
+          <Route path="*" element={<Navigate to="/assessment/language?lang=English&code=en" replace />} />
         </Routes>
       </Router>
     </AssessmentProvider>
