@@ -17,6 +17,7 @@ ENV VITE_STANDALONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2O
 ENV VITE_STANDALONE_AGENT_ID=681b24379b4ac5f1931a7299
 ENV VITE_STANDALONE_RETURN_URL=https://rep-dashboard.harx.ai/profile
 ENV VITE_RETURN_URL=/repdashboard/profile
+ENV VITE_FRONT_URL=https://rep-assessments.harx.ai/
 
 # Install dependencies
 RUN npm install
