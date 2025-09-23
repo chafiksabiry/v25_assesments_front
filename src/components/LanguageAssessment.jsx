@@ -1,13 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { getPassage, getNewPassage } from '../utils/passageManager';
 import { analyzeRecordingVertex, uploadRecording } from '../lib/api/vertex';
-import OpenAI from 'openai';
+import { analyzeLanguageAssessment } from '../lib/api/languageAssessment';
 import { useAssessment } from '../context/AssessmentContext';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const { loading: assessmentLoading, error: assessmentError } = useAssessment();
@@ -131,47 +126,8 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     setAnalyzing(true);
     try {
       const cleanLanguageName = getCleanLanguageName();
-      // Simulate AI analysis with GPT-3
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `You are a language assessment expert. Analyze the following reading passage and provide a detailed assessment with scores and feedback in the following JSON format:
-            {
-              "pronunciation": {
-                "score": number (1-10),
-                "feedback": "string"
-              },
-              "fluency": {
-                "score": number (1-10),
-                "feedback": "string"
-              },
-              "comprehension": {
-                "score": number (1-10),
-                "feedback": "string"
-              },
-              "vocabulary": {
-                "score": number (1-10),
-                "feedback": "string"
-              },
-              "overall": {
-                "score": number (1-100),
-                "feedback": "string"
-              },
-              "language_code": "string"
-            }`
-          },
-          {
-            role: "user",
-            content: `Reading passage: ${passage.text}\nSimulate assessment for ${cleanLanguageName} language proficiency.`
-          }
-        ],
-        temperature: 0.7,
-        response_format: { type: "json_object" }
-      });
-
-      const assessmentResults = JSON.parse(response.choices[0].message.content);
+      const assessmentResults = await analyzeLanguageAssessment(passage.text, cleanLanguageName);
+      
       // Add language code to results
       assessmentResults.language_code = languageCode;
       console.log('assessmentResults :', assessmentResults);
@@ -238,9 +194,9 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     } catch (error) {
       console.error('Error analyzing recording with Vertex API:', error);
       
-      // Fallback to OpenAI if Vertex API fails
+      // Fallback to language assessment API if Vertex API fails
       try {
-        console.log('Attempting to fallback to OpenAI analysis...');
+        console.log('Attempting to fallback to language assessment analysis...');
         await analyzeRecording();
       } catch (fallbackError) {
         console.error('Fallback analysis also failed:', fallbackError);
