@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAssessment } from '../context/AssessmentContext';
-import OpenAI from 'openai';
 import { transcribeLongAudio } from '../lib/api/speechToText';
 import { uploadRecording, analyzeContentCenterSkill } from '../lib/api/vertex';
+import { generateScenario, analyzeResponse } from '../lib/api/contactCenterAssessment';
 
 // Add style for notifications
 const notificationStyles = `
@@ -25,11 +25,6 @@ const notificationStyles = `
     animation: fadeOut 0.3s ease-in forwards;
   }
 `;
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
 
 // Helper function to convert kebab-case to Title Case
 const formatSkillName = (skillId) => {
@@ -89,45 +84,18 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
   
   useEffect(() => {
     if (!scenario) {
-      generateScenario();
+      generateNewScenario();
     }
   }, []);
   
   // Generate a scenario for the skill
-  const generateScenario = async () => {
+  const generateNewScenario = async () => {
     setLocalLoading(true);
     try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `Create a realistic contact center scenario to test ${currentSkill?.name || 'customer service'} skills. Include:
-            1. Customer situation/problem
-            2. Key challenges
-            3. Expected response elements
-            4. Evaluation criteria
-            
-            Format as JSON:
-            {
-              "scenario": "string",
-              "customerProfile": "string",
-              "challenge": "string",
-              "expectedElements": ["string"],
-              "evaluationCriteria": ["string"],
-              "difficulty": "string"
-            }`
-          },
-          {
-            role: "user",
-            content: `Generate a scenario for testing ${currentSkill?.name || 'customer service'} in ${currentSkill?.category || 'Customer Service'}`
-          }
-        ],
-        temperature: 0.7,
-        response_format: { type: "json_object" }
-      });
-
-      const scenarioData = JSON.parse(response.choices[0].message.content);
+      const scenarioData = await generateScenario(
+        currentSkill?.name || 'customer service',
+        currentSkill?.category || 'Customer Service'
+      );
       setScenario(scenarioData);
     } catch (error) {
       console.error('Error generating scenario:', error);
@@ -325,16 +293,16 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
       console.error('Error analyzing with Vertex API:', error);
       setError('Error analyzing your response. Please try again.');
       
-      // Fallback to OpenAI analysis
-      analyzeResponse();
+      // Fallback to API analysis
+      analyzeResponseWithAPI();
     } finally {
       setAnalyzing(false);
       setTranscribing(false);
     }
   };
   
-  // Original analyze response using OpenAI (as fallback)
-  const analyzeResponse = async () => {
+  // Analyze response using the API
+  const analyzeResponseWithAPI = async () => {
     if (!response.trim() && !audioBlob) {
       setError('Please provide a response or recording before analyzing.');
       return;
@@ -342,36 +310,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
     
     setAnalyzing(true);
     try {
-      const analysisResponse = await openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert contact center trainer. Analyze the agent's response based on ${currentSkill?.name || 'customer service'} criteria.
-            Provide detailed feedback in JSON format:
-            {
-              "score": number (0-100),
-              "strengths": ["string"],
-              "improvements": ["string"],
-              "feedback": "string",
-              "tips": ["string"],
-              "keyMetrics": {
-                "professionalism": number (0-100),
-                "effectiveness": number (0-100),
-                "customerFocus": number (0-100)
-              }
-            }`
-          },
-          {
-            role: "user",
-            content: `Scenario: ${scenario.scenario}\nAgent's Response: ${response}\nEvaluation Criteria: ${JSON.stringify(scenario.evaluationCriteria)}`
-          }
-        ],
-        temperature: 0.7,
-        response_format: { type: "json_object" }
-      });
-
-      const feedback = JSON.parse(analysisResponse.choices[0].message.content);
+      const feedback = await analyzeResponse(response, scenario, currentSkill?.name || 'customer service');
       setResults(feedback);
       
       // Note: We're not saving results automatically anymore
@@ -456,7 +395,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
     setAudioBlob(null);
     setResponse('');
     setResults(null);
-    generateScenario();
+    generateNewScenario();
   };
   
   if (!currentSkill) {

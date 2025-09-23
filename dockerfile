@@ -8,7 +8,6 @@ WORKDIR /app
 COPY package*.json ./
 
 ENV VITE_API_URL=https://api-repcreationwizard.harx.ai/api
-ENV VITE_OPENAI_API_KEY=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
 #ENV VITE_RUN_MODE=standalone
 ENV VITE_RUN_MODE=in-app
 #user id for standalone mode 
@@ -17,6 +16,7 @@ ENV VITE_STANDALONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2O
 ENV VITE_STANDALONE_AGENT_ID=681b24379b4ac5f1931a7299
 ENV VITE_STANDALONE_RETURN_URL=https://rep-dashboard.harx.ai/profile
 ENV VITE_RETURN_URL=/repdashboard/profile
+ENV VITE_FRONT_URL=https://rep-assessments.harx.ai/
 
 # Install dependencies
 RUN npm install
