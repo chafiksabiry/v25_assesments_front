@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
 
   return {
-    base: 'https://rep-assessments.harx.ai/',
+    base: 'https://harxv25assessmentsfront.netlify.app',
     plugins: [
       react({
         jsxRuntime: 'classic',
