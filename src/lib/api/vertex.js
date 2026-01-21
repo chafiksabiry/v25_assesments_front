@@ -42,7 +42,7 @@ export const analyzeRecordingVertex = async (analyzeData) => {
 export const analyzeContentCenterSkill = async (analyzeData) => {
     try {
         const responseData = await api.post('/vertex/contactCenter/evaluate', analyzeData);
-        return responseData;
+        return responseData.data;
     } catch (error) {
         throw error.response?.data || error;
     }
