@@ -24,7 +24,8 @@ export const uploadRecording = async (analyzeData) => {
 export const analyzeRecordingVertex = async (analyzeData) => {
     try {
         const responseData = await api.post('/vertex/language/evaluate', analyzeData);
-        return responseData.data.candidates[0].content.parts[0].text;
+        // The backend now returns the parsed JSON directly
+        return responseData.data;
     } catch (error) {
         throw error.response?.data || error;
     }
