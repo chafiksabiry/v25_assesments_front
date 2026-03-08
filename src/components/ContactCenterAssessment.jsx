@@ -361,7 +361,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
               }
             }, 500);
           }
-        }, 3000);
+        }, 100000);
         
         // Call onComplete with the assessment data
         if (onComplete) {

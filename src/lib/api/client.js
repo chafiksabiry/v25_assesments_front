@@ -6,7 +6,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 seconds
+  timeout: 120000, // 120 seconds
 });
 
 // Create an axios instance for multipart form data
@@ -15,7 +15,7 @@ export const apiMultipart = axios.create({
   headers: {
     'Content-Type': 'multipart/form-data',
   },
-  timeout: 30000, // 30 seconds
+  timeout: 120000, // 120 seconds
 });
 
 // Add a request interceptor to include authorization token

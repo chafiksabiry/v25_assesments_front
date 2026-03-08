@@ -11,23 +11,23 @@ export const AssessmentProvider = ({ children }) => {
     languages: {},
     contactCenter: {}
   });
-  
+
   const [userId, setUserId] = useState(null);
   const [token, setToken] = useState(null);
   const [returnUrl, setReturnUrl] = useState('/');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentAssessmentType, setCurrentAssessmentType] = useState(null);
-  
+
   // Initialize auth data on mount
   useEffect(() => {
     const { userId: authUserId, token: authToken, returnUrl: authReturnUrl } = initializeAuth();
-    
+
     if (authUserId) setUserId(authUserId);
     if (authToken) setToken(authToken);
     if (authReturnUrl) setReturnUrl(authReturnUrl);
   }, []);
-  
+
   // Configure axios with the authentication token
   useEffect(() => {
     if (token) {
@@ -36,7 +36,7 @@ export const AssessmentProvider = ({ children }) => {
       delete axios.defaults.headers.common['Authorization'];
     }
   }, [token]);
-  
+
   // Sample language options
   const languageOptions = [
     { id: 'en', language: 'English' },
@@ -45,10 +45,10 @@ export const AssessmentProvider = ({ children }) => {
     { id: 'de', language: 'German' },
     { id: 'ar', language: 'Arabic' }
   ];
-  
+
   // Sample contact center skills
   const contactCenterSkills = [
-    { 
+    {
       category: 'Communication',
       skills: [
         { id: 'active-listening', name: 'Active Listening' },
@@ -74,23 +74,31 @@ export const AssessmentProvider = ({ children }) => {
         { id: 'product-knowledge', name: 'Product Knowledge' },
         { id: 'quality-assurance', name: 'Quality Assurance' }
       ]
+    },
+    {
+      category: 'Activities',
+      skills: []
+    },
+    {
+      category: 'Industries',
+      skills: []
     }
   ];
-  
+
   // Save a language assessment result
   const saveLanguageAssessment = async (language, proficiency, results, iso639_1) => {
     // Get the agent ID from localStorage/auth utils - this is critical for saving
     const agentId = getAgentId();
-    
+
     if (!agentId) {
       console.error('Cannot save assessment: No agent ID provided');
       setError('Missing agent ID - cannot save assessment');
       return false;
     }
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       // Update local state first (this will work even if API call fails)
       setAssessmentResults(prev => ({
@@ -102,17 +110,17 @@ export const AssessmentProvider = ({ children }) => {
           }
         }
       }));
-      
+
       // Attempt to save to backend API if URL is configured
       if (import.meta.env.VITE_API_URL) {
         try {
           // Check if we're in demo/development mode
-          const isDemoMode = import.meta.env.VITE_RUN_MODE === 'standalone' || 
-                           !import.meta.env.PROD;
-          
+          const isDemoMode = import.meta.env.VITE_RUN_MODE === 'standalone' ||
+            !import.meta.env.PROD;
+
           // Create a new result object without languageOrTextMismatch
           const { languageOrTextMismatch, ...resultsToSend } = results;
-                           
+
           // If in demo mode and the endpoint might not exist, log instead of throwing error
           if (isDemoMode) {
             console.log('Demo mode: Would save assessment data to backend:', {
@@ -121,7 +129,7 @@ export const AssessmentProvider = ({ children }) => {
               proficiency,
               results: resultsToSend
             });
-            
+
             // Try the API call anyway, but don't fail if it's not available
             try {
               // Use the correct endpoint: /:id/language-assessment
@@ -148,9 +156,9 @@ export const AssessmentProvider = ({ children }) => {
         } catch (apiError) {
           console.error('Error communicating with backend API:', apiError);
           // Check if this is the specific error about language not found by ISO code
-          if (apiError.response && apiError.response.data && 
-              apiError.response.data.message && 
-              apiError.response.data.message.includes('not found in user\'s profile')) {
+          if (apiError.response && apiError.response.data &&
+            apiError.response.data.message &&
+            apiError.response.data.message.includes('not found in user\'s profile')) {
             setError(`The language with code ${iso639_1} needs to be added to your profile first.`);
           } else {
             // Generic error
@@ -160,7 +168,7 @@ export const AssessmentProvider = ({ children }) => {
       } else {
         console.warn('No API URL configured. Assessment results saved only locally.');
       }
-      
+
       // Show success message or notification here if needed
       return true; // Indicate success
     } catch (err) {
@@ -171,48 +179,48 @@ export const AssessmentProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
+
   // Save a contact center skill assessment result
   const saveContactCenterAssessment = async (skillId, category, assessmentData) => {
     // Get the agent ID from localStorage/auth utils
     const agentId = getAgentId();
-    
+
     if (!agentId) {
       console.error('Cannot save assessment: No agent ID provided');
       setError('Missing agent ID - cannot save assessment');
       return false;
     }
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
       // For local state, we'll check if this skill already exists
       setAssessmentResults(prev => {
         // Create a new copy of the contactCenter state
         const newContactCenterState = { ...prev.contactCenter };
-        
+
         // Update or add the assessment for this skill
         newContactCenterState[skillId] = {
           category,
           ...assessmentData
         };
-        
+
         // Return the updated state
         return {
           ...prev,
           contactCenter: newContactCenterState
         };
       });
-      
+
       // Call API to save results to backend using the new format
       if (import.meta.env.VITE_API_URL) {
         try {
           // Use the profiles endpoint with the format expected by the backend
-          const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/contact-center-assessment`, { 
+          const response = await axios.post(`${import.meta.env.VITE_API_URL}/profiles/${agentId}/contact-center-assessment`, {
             assessment: assessmentData
           });
-          
+
           console.log('Contact center assessment saved to backend:', response.data);
           return true;
         } catch (apiError) {
@@ -233,14 +241,14 @@ export const AssessmentProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
+
   // Reset the current assessment state when closing dialog
   const resetAssessment = () => {
     setCurrentAssessmentType(null);
     setError(null);
     setLoading(false);
   };
-  
+
   // Check if all assessments for a category are completed
   const isAssessmentCategoryComplete = (category) => {
     if (category === 'language') {
@@ -254,12 +262,12 @@ export const AssessmentProvider = ({ children }) => {
     }
     return false;
   };
-  
+
   // Handle exit/return to parent application
   const exitToParentApp = () => {
     returnToParentApp();
   };
-  
+
   return (
     <AssessmentContext.Provider value={{
       assessmentResults,

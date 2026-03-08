@@ -7,41 +7,54 @@ import { isAuthenticated, returnToParentApp } from '../utils/authUtils';
 function ContactCenterAssessmentPage() {
   const { skillId } = useParams();
   const { contactCenterSkills, setCurrentAssessmentType } = useAssessment();
-  
-  // Find the skill category based on skillId
+
+  // Find the skill category based on skillId or query parameter
   const findSkillCategory = () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const queryCategory = queryParams.get('cat');
+
     for (const categoryGroup of contactCenterSkills) {
       const foundSkill = categoryGroup.skills.find(skill => skill.id === skillId);
       if (foundSkill) {
         return {
-          category: categoryGroup.category,
+          category: queryCategory || categoryGroup.category,
           skill: foundSkill
         };
       }
     }
-    return { category: 'Unknown', skill: { id: skillId, name: skillId } };
+
+    return {
+      category: queryCategory || 'Unknown',
+      skill: { id: skillId, name: formatSkillName(skillId) }
+    };
   };
-  
+
+  // Helper function to format skill name (copy from ContactCenterAssessment if needed or just use simple logic)
+  function formatSkillName(id) {
+    if (!id) return 'Unknown';
+    return id.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  }
+
   const { category, skill } = findSkillCategory();
-  
+
   // Set current assessment type and check authentication
   useEffect(() => {
     setCurrentAssessmentType('contact-center');
-    
+
     // Check if the user is authenticated
     if (!isAuthenticated() && import.meta.env.VITE_RUN_MODE !== 'standalone') {
       console.warn('No authentication data found. Using demo mode.');
       // You can add logic to redirect to login here if needed
     }
   }, [setCurrentAssessmentType]);
-  
+
   const handleComplete = (results) => {
     console.log('Assessment completed:', results);
-    
+
     // Navigate back to parent app after completion
     returnToParentApp();
   };
-  
+
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -50,16 +63,16 @@ function ContactCenterAssessmentPage() {
             <h1 className="text-2xl font-bold text-white">
               {category}: {skill.name} Assessment
             </h1>
-            <button 
+            <button
               onClick={returnToParentApp}
               className="px-4 py-2 bg-white text-indigo-700 rounded-lg hover:bg-indigo-50 transition-colors"
             >
               Exit
             </button>
           </div>
-          
+
           <div className="p-6">
-            <ContactCenterAssessment 
+            <ContactCenterAssessment
               skillId={skillId}
               category={category}
               skillName={skill.name}

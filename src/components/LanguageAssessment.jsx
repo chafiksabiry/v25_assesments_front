@@ -18,7 +18,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const [languageCode, setLanguageCode] = useState(null);
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
-  
+
   // Protection against race conditions
   const currentRequestId = useRef(0);
   const currentLanguageRef = useRef(null);
@@ -33,29 +33,29 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
   const loadPassage = async (forceNew = false) => {
     // Generate unique request ID
     const requestId = ++currentRequestId.current;
-    
+
     try {
       setIsGenerating(true);
       setPassageError(null);
-      
+
       // Use the clean language name for API calls
       const cleanLanguageName = getCleanLanguageName();
       console.log(`[Request ${requestId}] ${forceNew ? 'Force generating' : 'Loading'} passage for language: ${cleanLanguageName}`);
-      
-      const passageData = forceNew 
+
+      const passageData = forceNew
         ? await getNewPassage(cleanLanguageName)
         : await getPassage(cleanLanguageName);
-      
+
       // Check if this is still the latest request
       if (requestId !== currentRequestId.current) {
         console.log(`[Request ${requestId}] Ignoring outdated response for ${cleanLanguageName}`);
         return;
       }
-      
+
       setPassage(passageData);
       setLanguageCode(passageData.code);
       currentLanguageRef.current = cleanLanguageName;
-      
+
       console.log(`[Request ${requestId}] Passage loaded successfully for ${cleanLanguageName}:`, passageData.title);
     } catch (error) {
       // Only show error if this is still the latest request
@@ -127,7 +127,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     try {
       const cleanLanguageName = getCleanLanguageName();
       const assessmentResults = await analyzeLanguageAssessment(passage.text, cleanLanguageName);
-      
+
       // Add language code to results
       assessmentResults.language_code = languageCode;
       console.log('assessmentResults :', assessmentResults);
@@ -156,52 +156,49 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
       console.log('file :', file);
       formData.append('file', file);
       formData.append('destinationName', `audio-${Date.now()}.opus`);
-      
+
       // Use the updated uploadRecording function
       const uploadResponse = await uploadRecording(formData);
       console.log('Upload response:', uploadResponse);
-      
+
       // Get the file URI from the response
       const fileUri = uploadResponse.data.fileUri;
-      
+
       // Prepare data for vertex analysis
       const analysisData = {
         "fileUri": fileUri,
         "textToCompare": passage?.text,
         "language": cleanLanguageName
       };
-      
+
       // Use the updated analyzeRecordingVertex function
       const vertexResponse = await analyzeRecordingVertex(analysisData);
       console.log("Vertex response:", vertexResponse);
-      
+
       // Keep the original Vertex response format
       // Only add language_code if it doesn't exist
       if (!vertexResponse.language_code) {
         vertexResponse.language_code = languageCode;
       }
-      
+
       // Set results to the original Vertex response
       setResults(vertexResponse);
-      
+
       // Store the overall score for comparison if it exists
       if (vertexResponse.overall && vertexResponse.overall.score !== undefined) {
         setPreviousScores(prev => [...prev, vertexResponse.overall.score]);
       }
-      
+
       // Increment attempts
       setAttempts(prev => prev + 1);
     } catch (error) {
       console.error('Error analyzing recording with Vertex API:', error);
-      
-      // Fallback to language assessment API if Vertex API fails
-      try {
-        console.log('Attempting to fallback to language assessment analysis...');
-        await analyzeRecording();
-      } catch (fallbackError) {
-        console.error('Fallback analysis also failed:', fallbackError);
-        alert('Error analyzing recording. Please try again.');
-      }
+
+      const errorMessage = error.name === 'AxiosError' && error.message.includes('timeout')
+        ? 'The analysis is taking longer than expected. Please try again with a shorter recording.'
+        : 'Error analyzing recording. Please try again.';
+
+      alert(errorMessage);
     } finally {
       setAnalyzing(false);
     }
@@ -239,7 +236,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     setAudioBlob(null);
     setResults(null);
     // Don't reset previousScores or attempts - we want to track these
-    
+
     // Generate a new passage for variety
     await loadPassage(true);
   };
@@ -420,7 +417,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
             <div className="bg-white p-4 rounded-lg border border-gray-200 col-span-1">
               <h3 className="font-medium text-gray-800 mb-2">Language Match</h3>
               <p className="text-sm text-gray-700">
-                {results.languageOrTextMismatch 
+                {results.languageOrTextMismatch
                   ? "The language spoken doesn't match the expected language or the text was not read correctly."
                   : "The language spoken matches the expected language."}
               </p>
