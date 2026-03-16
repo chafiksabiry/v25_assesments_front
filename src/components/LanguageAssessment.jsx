@@ -308,7 +308,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
             {!audioBlob ? (
               <button
                 onClick={recording ? stopRecording : startRecording}
-                className={`px-6 py-3 rounded-full text-white font-medium flex items-center ${recording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+                className={`px-8 py-4 rounded-2xl text-white font-black uppercase tracking-widest text-xs flex items-center shadow-lg transition-all duration-300 hover:-translate-y-0.5 ${recording ? 'bg-harx-600 hover:bg-harx-700 shadow-harx-500/20' : 'bg-harx-alt-500 hover:bg-harx-alt-600 shadow-harx-alt-500/20'
                   }`}
                 disabled={isGenerating}
               >
@@ -341,7 +341,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
                   </button>
                   <button
                     onClick={analyzeAudio}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="px-6 py-2.5 bg-gradient-harx text-white rounded-xl hover:shadow-lg hover:shadow-harx-500/20 transition-all hover:-translate-y-0.5 font-bold uppercase tracking-wider text-xs"
                     disabled={analyzing}
                   >
                     {analyzing ? (
@@ -374,8 +374,8 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
         // Results display UI
         <div className="space-y-6">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-blue-50 text-blue-600 mb-4">
-              <span className="text-4xl font-bold">{results.overall?.score || 0}</span>
+            <div className="inline-flex items-center justify-center h-24 w-24 rounded-3xl bg-harx-50 text-harx-600 mb-6 shadow-sm border border-harx-100">
+              <span className="text-4xl font-black">{results.overall?.score || 0}</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-800">
               {results.overall?.score >= 70 ? 'Great job!' : 'Good effort!'}

@@ -118,17 +118,17 @@ function LanguageAssessmentPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="bg-blue-700 px-6 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-white">
+        <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden transition-all duration-500 hover:shadow-harx-500/10">
+          <div className="bg-gradient-harx px-8 py-6 flex justify-between items-center">
+            <h1 className="text-2xl font-black text-white tracking-tight uppercase">
               {displayLanguageName} Assessment
             </h1>
-            <button 
-              onClick={returnToParentApp}
-              className="px-4 py-2 bg-white text-blue-700 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              Exit
-            </button>
+              <button 
+                onClick={returnToParentApp}
+                className="px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all border border-white/10 font-bold uppercase tracking-wider text-xs"
+              >
+                Exit
+              </button>
           </div>
           
           <div className="p-6">

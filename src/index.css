@@ -2,12 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+/* Global custom scrollbar styles with HARX branding */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
 
-@layer base {
-  body {
-    @apply bg-gray-50;
-  }
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff4d4d 0%, #ec4899 100%);
+  border-radius: 5px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff3333 0%, #db2777 100%);
+}
+
+/* Firefox support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #ff4d4d #f8fafc;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #ff4d4d #f8fafc;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff4d4d 0%, #ec4899 100%);
+  border-radius: 3px;
+}
+
+/* Typography and smooth transitions */
+body {
+  @apply antialiased text-gray-900 bg-white;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Glassmorphism utility */
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }

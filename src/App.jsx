@@ -26,7 +26,7 @@ function App() {
       <AssessmentProvider>
         <Router basename={basename}>
           <ProtectedRoute>
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-premium-gradient">
               <TopBar />
               <div className="flex-1">
                 <Routes>
