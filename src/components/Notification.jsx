@@ -14,15 +14,15 @@ function Notification({ message, type = 'success', duration = 5000, onClose }) {
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-500 text-white';
+        return 'bg-emerald-500/90 shadow-emerald-500/20';
       case 'error':
-        return 'bg-red-500 text-white';
+        return 'bg-harx-500/90 shadow-harx-500/20';
       case 'warning':
-        return 'bg-yellow-500 text-white';
+        return 'bg-amber-500/90 shadow-amber-500/20';
       case 'info':
-        return 'bg-blue-500 text-white';
+        return 'bg-harx-alt-500/90 shadow-harx-alt-500/20';
       default:
-        return 'bg-gray-500 text-white';
+        return 'bg-gray-700/90 shadow-gray-500/20';
     }
   };
 
@@ -58,7 +58,7 @@ function Notification({ message, type = 'success', duration = 5000, onClose }) {
   };
 
   return (
-    <div className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all transform duration-500 ${getTypeStyles()}`}>
+    <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 transition-all transform duration-500 animate-fade-in backdrop-blur-md border border-white/20 text-white ${getTypeStyles()}`}>
       <div className="flex items-center space-x-2">
         {getIcon()}
         <span className="font-medium">{message}</span>
