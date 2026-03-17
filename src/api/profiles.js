@@ -35,3 +35,4 @@ export const deleteProfile = async () => {
   );
   return response.data;
 };
+

@@ -222,7 +222,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
     const isImprovement = difference > 0;
 
     return (
-      <div className={`mt-4 p-3 rounded-lg ${isImprovement ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700'}`}>
+      <div className={`mt-4 p-3 rounded-lg ${isImprovement ? 'bg-green-50 text-green-700' : 'bg-harx-50 text-harx-700'}`}>
         <p className="font-medium">
           {isImprovement
             ? `Improvement: +${difference.toFixed(1)} points from your previous attempt!`
@@ -274,7 +274,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
         <p className="text-gray-700 mb-4">{passageError}</p>
         <button
           onClick={handleExit}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-harx-600 text-white rounded-lg hover:bg-harx-700 transition-colors"
         >
           Return to Dashboard
         </button>
@@ -364,7 +364,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
           <div className="text-center">
             <button
               onClick={handleExit}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="text-harx-600 hover:text-harx-800 text-sm font-medium"
             >
               Exit Assessment
             </button>
@@ -374,7 +374,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
         // Results display UI
         <div className="space-y-6">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-3xl bg-harx-50 text-harx-600 mb-6 shadow-sm border border-harx-100">
+            <div className="inline-flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-50 text-emerald-600 mb-6 shadow-sm border border-emerald-100">
               <span className="text-4xl font-black">{results.overall?.score || 0}</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -391,7 +391,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Completeness</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.completeness?.score || 0}/100</span>
+                <span className="font-bold text-harx-600">{results.completeness?.score || 0}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.completeness?.feedback || "No completeness assessment available"}</p>
             </div>
@@ -400,7 +400,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Fluency</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.fluency?.score || 0}/100</span>
+                <span className="font-bold text-harx-600">{results.fluency?.score || 0}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.fluency?.feedback || "No fluency assessment available"}</p>
             </div>
@@ -409,7 +409,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
               <h3 className="font-medium text-gray-800 mb-2">Proficiency</h3>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-blue-600">{results.proficiency?.score || 0}/100</span>
+                <span className="font-bold text-harx-600">{results.proficiency?.score || 0}/100</span>
               </div>
               <p className="text-sm text-gray-700">{results.proficiency?.feedback || "No proficiency assessment available"}</p>
             </div>
@@ -424,7 +424,7 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
             </div>
           </div>
 
-          <div className="bg-blue-50 p-4 rounded-lg">
+          <div className="bg-harx-50 p-4 rounded-lg">
             <h3 className="font-medium text-gray-800 mb-2">Overall Assessment</h3>
             <div className="space-y-2">
               {results.overall?.areasForImprovement && (
@@ -448,12 +448,12 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
           <div className="flex justify-between pt-4">
             <button
               onClick={retakeAssessment}
-              className="px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-white border border-harx-600 text-harx-600 rounded-lg hover:bg-harx-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isGenerating}
             >
               {isGenerating ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-harx-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -487,3 +487,4 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
 }
 
 export default LanguageAssessment;
+

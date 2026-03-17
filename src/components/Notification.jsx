@@ -16,11 +16,11 @@ function Notification({ message, type = 'success', duration = 5000, onClose }) {
       case 'success':
         return 'bg-emerald-500/90 shadow-emerald-500/20';
       case 'error':
-        return 'bg-harx-500/90 shadow-harx-500/20';
+        return 'bg-harx-600/90 shadow-harx-600/20';
       case 'warning':
         return 'bg-amber-500/90 shadow-amber-500/20';
       case 'info':
-        return 'bg-harx-alt-500/90 shadow-harx-alt-500/20';
+        return 'bg-harx-500/90 shadow-harx-500/20';
       default:
         return 'bg-gray-700/90 shadow-gray-500/20';
     }
@@ -76,3 +76,4 @@ function Notification({ message, type = 'success', duration = 5000, onClose }) {
 }
 
 export default Notification; 
+

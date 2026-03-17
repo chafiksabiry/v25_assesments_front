@@ -46,3 +46,4 @@ export const analyzeContentCenterSkill = async (analyzeData) => {
         throw error.response?.data || error;
     }
 };
+

@@ -31,3 +31,4 @@ export const getNewPassage = async (language) => {
     throw new Error(`Unable to provide new passage for ${language}: ${error.message}`);
   }
 }; 
+

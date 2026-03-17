@@ -70,3 +70,5 @@ export const getNewPassage = async (language) => {
     throw error;
   }
 };
+
+

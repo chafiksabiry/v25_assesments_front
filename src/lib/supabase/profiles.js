@@ -407,3 +407,4 @@ export const deleteProfile = async (profileId) => {
     throw error;
   }
 };
+

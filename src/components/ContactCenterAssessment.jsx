@@ -347,7 +347,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
         
         // Show success message as a toast/notification
         const notificationDiv = document.createElement('div');
-        notificationDiv.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fadeIn';
+        notificationDiv.className = 'fixed top-4 right-4 bg-emerald-500 text-white px-4 py-2 rounded-md shadow-lg z-50 animate-fadeIn';
         notificationDiv.textContent = 'Assessment results saved successfully!';
         document.body.appendChild(notificationDiv);
         
@@ -407,7 +407,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
         </p>
         <button
           onClick={handleBack}
-          className="px-4 py-2 bg-purple-600 text-white rounded-md"
+          className="px-4 py-2 bg-harx-alt-600 text-white rounded-md"
         >
           Go Back
         </button>
@@ -426,7 +426,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
       
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="inline-block w-12 h-12 border-4 border-harx-alt-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-gray-600">Generating scenario...</p>
         </div>
       ) : (
@@ -434,7 +434,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
           {scenario && !results && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Scenario</h3>
-              <div className="bg-purple-50 p-5 rounded-lg mb-6">
+              <div className="bg-harx-alt-50 p-5 rounded-lg mb-6">
                 <p className="text-lg text-gray-800 leading-relaxed">{scenario.scenario}</p>
               </div>
               
@@ -521,7 +521,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                         className={`py-2 px-6 rounded-lg ${
                           analyzing || transcribing
                             ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-purple-600 hover:bg-purple-700'
+                            : 'bg-harx-alt-600 hover:bg-harx-alt-700'
                         } text-white transition-colors`}
                       >
                         {analyzing ? 'Analyzing...' : transcribing ? 'Transcribing...' : 'Analyze Response'}
@@ -535,7 +535,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
           
           {(analyzing || transcribing) && (
             <div className="text-center py-12">
-              <div className="inline-block w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="inline-block w-12 h-12 border-4 border-harx-alt-600 border-t-transparent rounded-full animate-spin"></div>
               <p className="mt-4 text-gray-600">
                 {transcribing ? 'Transcribing your audio...' : 'Analyzing your response...'}
               </p>
@@ -548,7 +548,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 <h3 className="text-xl font-semibold text-gray-800">Assessment Results</h3>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-600">Proficiency Level:</span>
-                  <span className="text-sm font-medium px-3 py-1 bg-purple-100 text-purple-800 rounded-full">
+                  <span className="text-sm font-medium px-3 py-1 bg-harx-alt-100 text-harx-alt-800 rounded-full">
                     {mapScoreToProficiency(results.score)}
                   </span>
                 </div>
@@ -557,11 +557,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
               <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-lg font-semibold text-gray-800">Overall Score</span>
-                  <span className="text-2xl font-bold text-purple-600">{results.score}%</span>
+                  <span className="text-2xl font-bold text-harx-alt-600">{results.score}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div 
-                    className="bg-purple-600 h-2.5 rounded-full" 
+                    className="bg-harx-alt-600 h-2.5 rounded-full" 
                     style={{ width: `${results.score}%` }}
                   ></div>
                 </div>
@@ -571,11 +571,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-medium text-gray-800">Professionalism</h4>
-                    <span className="font-bold text-purple-600">{results.keyMetrics.professionalism}%</span>
+                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.professionalism}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
                     <div 
-                      className="bg-purple-600 h-1.5 rounded-full" 
+                      className="bg-harx-alt-600 h-1.5 rounded-full" 
                       style={{ width: `${results.keyMetrics.professionalism}%` }}
                     ></div>
                   </div>
@@ -584,11 +584,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-medium text-gray-800">Effectiveness</h4>
-                    <span className="font-bold text-purple-600">{results.keyMetrics.effectiveness}%</span>
+                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.effectiveness}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
                     <div 
-                      className="bg-purple-600 h-1.5 rounded-full" 
+                      className="bg-harx-alt-600 h-1.5 rounded-full" 
                       style={{ width: `${results.keyMetrics.effectiveness}%` }}
                     ></div>
                   </div>
@@ -597,11 +597,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="flex justify-between items-center mb-2">
                     <h4 className="font-medium text-gray-800">Customer Focus</h4>
-                    <span className="font-bold text-purple-600">{results.keyMetrics.customerFocus}%</span>
+                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.customerFocus}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
                     <div 
-                      className="bg-purple-600 h-1.5 rounded-full" 
+                      className="bg-harx-alt-600 h-1.5 rounded-full" 
                       style={{ width: `${results.keyMetrics.customerFocus}%` }}
                     ></div>
                   </div>
@@ -609,11 +609,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
               </div>
               
               <div className="space-y-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg">
+                <div className="bg-emerald-50 p-4 rounded-lg">
                   <h4 className="font-medium text-gray-800 mb-2">Strengths</h4>
                   <ul className="list-disc pl-5 space-y-1">
                     {results.strengths.map((strength, index) => (
-                      <li key={index} className="text-gray-600">{strength}</li>
+                      <li key={index} className="text-emerald-700">{strength}</li>
                     ))}
                   </ul>
                 </div>
@@ -628,12 +628,12 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 </div>
               </div>
               
-              <div className="bg-purple-50 p-4 rounded-lg mb-6">
+              <div className="bg-harx-alt-50 p-4 rounded-lg mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Feedback</h4>
                 <p className="text-gray-600">{results.feedback}</p>
               </div>
               
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
+              <div className="bg-harx-50 p-4 rounded-lg mb-6">
                 <h4 className="font-medium text-gray-800 mb-2">Tips for Improvement</h4>
                 <ul className="list-disc pl-5 space-y-1">
                   {results.tips.map((tip, index) => (
@@ -651,7 +651,7 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                 </button>
                 <button
                   onClick={saveResults}
-                  className="flex-1 py-2 px-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  className="flex-1 py-2 px-4 bg-harx-alt-600 text-white rounded-lg hover:bg-harx-alt-700 transition-colors"
                 >
                   Save Results
                 </button>
@@ -665,3 +665,4 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
 }
 
 export default ContactCenterAssessment;
+
