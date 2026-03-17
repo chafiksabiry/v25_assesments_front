@@ -432,42 +432,46 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
       ) : (
         <div className="space-y-8">
           {scenario && !results && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Scenario</h3>
-              <div className="bg-harx-alt-50 p-5 rounded-lg mb-6">
-                <p className="text-lg text-gray-800 leading-relaxed">{scenario.scenario}</p>
+            <div className="glass-card rounded-2xl shadow-xl border-harx-500/10 p-8 mb-10 overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-harx-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+              <h3 className="text-xl font-black text-white mb-6 uppercase tracking-wider">Assessment Scenario</h3>
+              <div className="bg-gradient-to-br from-harx-500/10 to-transparent p-6 rounded-2xl mb-8 border border-harx-500/20 backdrop-blur-sm shadow-inner">
+                <p className="text-xl text-harx-100 leading-relaxed font-medium">{scenario.scenario}</p>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-medium text-gray-800 mb-2">Customer Profile</h4>
-                  <p className="text-gray-600">{scenario.customerProfile}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                  <h4 className="font-bold text-harx-500 uppercase tracking-widest text-[10px] mb-2">Customer Profile</h4>
+                  <p className="text-slate-200 text-sm leading-relaxed">{scenario.customerProfile}</p>
                 </div>
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-medium text-gray-800 mb-2">Key Challenge</h4>
-                  <p className="text-gray-600">{scenario.challenge}</p>
+                <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-700/50 backdrop-blur-sm">
+                  <h4 className="font-bold text-harx-alt-400 uppercase tracking-widest text-[10px] mb-2">Key Challenge</h4>
+                  <p className="text-slate-200 text-sm leading-relaxed">{scenario.challenge}</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 gap-4 mb-6">
-                <div className="bg-white p-4 rounded-lg border border-gray-200">
-                  <h4 className="font-medium text-gray-800 mb-2">Expected Response Elements</h4>
-                  <ul className="list-disc pl-5 space-y-1">
+              <div className="grid grid-cols-1 gap-4 mb-8">
+                <div className="bg-slate-900/60 p-5 rounded-2xl border border-harx-500/10 shadow-inner">
+                  <h4 className="font-bold text-white uppercase tracking-widest text-[10px] mb-4 opacity-50">Expected Response Elements</h4>
+                  <ul className="space-y-3">
                     {scenario.expectedElements.map((item, index) => (
-                      <li key={index} className="text-gray-600">{item}</li>
+                      <li key={index} className="text-slate-300 text-sm flex items-start">
+                        <span className="text-harx-500 mr-2 mt-1">✦</span>
+                        {item}
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
               
-              <div className="border-t border-gray-200 pt-6 mt-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Response</h3>
+              <div className="border-t border-white/5 pt-8 mt-4">
+                <h3 className="text-lg font-black text-white mb-6 uppercase tracking-widest opacity-80">Your Response</h3>
                 
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {/* Conditionally render textarea as read-only if response exists */}
                   {response ? (
-                    <div className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg min-h-[8rem]">
-                      <p className="text-gray-700">{response}</p>
+                    <div className="w-full p-5 bg-slate-900/60 border border-harx-500/20 rounded-2xl min-h-[8rem] shadow-inner backdrop-blur-xl">
+                      <p className="text-harx-100 leading-relaxed">{response}</p>
                     </div>
                   ) : null}
                   
@@ -476,11 +480,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                       {audioBlob ? 'Audio recording ready' : 'Record your response'}
                     </div>
                     
-                    <div className="space-x-2">
+                    <div className="space-x-4">
                       {!recording && !audioBlob && (
                         <button
                           onClick={startRecording}
-                          className="py-2 px-4 bg-gray-100 text-gray-800 rounded-lg hover:bg-gray-200 transition-colors"
+                          className="py-3 px-8 bg-slate-800 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] border border-slate-700 hover:bg-slate-700 transition-all shadow-lg active:scale-95"
                         >
                           Record Audio Response
                         </button>
@@ -489,9 +493,9 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                       {recording && (
                         <button
                           onClick={stopRecording}
-                          className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+                          className="py-3 px-8 bg-red-600 text-white rounded-2xl font-bold uppercase tracking-widest text-[10px] hover:bg-red-700 transition-all flex items-center shadow-xl shadow-red-500/20 active:scale-95"
                         >
-                          <span className="w-2 h-2 bg-white rounded-full animate-pulse mr-2"></span>
+                          <span className="w-2.5 h-2.5 bg-white rounded-full animate-pulse mr-3"></span>
                           Stop Recording
                         </button>
                       )}
@@ -518,11 +522,11 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
                       <button
                         onClick={analyzeWithVertex}
                         disabled={analyzing || transcribing}
-                        className={`py-2 px-6 rounded-lg ${
+                        className={`py-3 px-10 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl transition-all hover:-translate-y-0.5 active:scale-95 ${
                           analyzing || transcribing
-                            ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-harx-alt-600 hover:bg-harx-alt-700'
-                        } text-white transition-colors`}
+                            ? 'bg-slate-700 text-slate-500 cursor-not-allowed border border-slate-600' 
+                            : 'bg-gradient-harx text-white shadow-harx-500/20'
+                        }`}
                       >
                         {analyzing ? 'Analyzing...' : transcribing ? 'Transcribing...' : 'Analyze Response'}
                       </button>
@@ -534,126 +538,137 @@ function ContactCenterAssessment({ skillId: propSkillId, category: propCategory,
           )}
           
           {(analyzing || transcribing) && (
-            <div className="text-center py-12">
-              <div className="inline-block w-12 h-12 border-4 border-harx-alt-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600">
+            <div className="text-center py-20 glass-card rounded-3xl border-dashed border-harx-500/20 max-w-lg mx-auto">
+              <div className="inline-block w-16 h-16 border-4 border-harx-500 border-t-transparent rounded-full animate-spin shadow-lg shadow-harx-500/20 mb-6"></div>
+              <p className="text-xl font-bold text-white tracking-tight">
                 {transcribing ? 'Transcribing your audio...' : 'Analyzing your response...'}
               </p>
+              <p className="text-slate-400 text-xs mt-2 uppercase tracking-widest font-bold opacity-60">AI is processing your performance</p>
             </div>
           )}
           
           {results && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">Assessment Results</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Proficiency Level:</span>
-                  <span className="text-sm font-medium px-3 py-1 bg-harx-alt-100 text-harx-alt-800 rounded-full">
+            <div className="glass-card rounded-3xl shadow-2xl border-harx-500/10 p-10 mb-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-harx-500/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+              <div className="flex justify-between items-center mb-10 relative z-10">
+                <h3 className="text-2xl font-black text-white tracking-tighter uppercase">Assessment Results</h3>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Proficiency:</span>
+                  <span className="text-[10px] font-black px-4 py-1.5 bg-harx-500 text-white rounded-full uppercase tracking-widest shadow-lg shadow-harx-500/20">
                     {mapScoreToProficiency(results.score)}
                   </span>
                 </div>
               </div>
               
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-lg font-semibold text-gray-800">Overall Score</span>
-                  <span className="text-2xl font-bold text-harx-alt-600">{results.score}%</span>
+              <div className="mb-12 relative z-10">
+                <div className="flex justify-between items-end mb-4">
+                  <span className="text-lg font-bold text-white opacity-80 uppercase tracking-widest text-xs">Overall Performance</span>
+                  <span className="text-5xl font-black text-harx-500 tracking-tighter">{results.score}<span className="text-xl opacity-50 ml-1">%</span></span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div className="w-full bg-slate-800/80 rounded-full h-4 p-0.5 border border-white/5">
                   <div 
-                    className="bg-harx-alt-600 h-2.5 rounded-full" 
+                    className="bg-gradient-harx h-full rounded-full transition-all duration-1000 shadow-lg shadow-harx-500/30" 
                     style={{ width: `${results.score}%` }}
                   ></div>
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 relative z-10">
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl backdrop-blur-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">Professionalism</h4>
-                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.professionalism}%</span>
+                    <h4 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Professionalism</h4>
+                    <span className="font-black text-harx-100 text-sm">{results.keyMetrics.professionalism}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                  <div className="w-full bg-slate-800/80 rounded-full h-1.5">
                     <div 
-                      className="bg-harx-alt-600 h-1.5 rounded-full" 
+                      className="bg-harx-500 h-full rounded-full" 
                       style={{ width: `${results.keyMetrics.professionalism}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl backdrop-blur-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">Effectiveness</h4>
-                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.effectiveness}%</span>
+                    <h4 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Effectiveness</h4>
+                    <span className="font-black text-harx-100 text-sm">{results.keyMetrics.effectiveness}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                  <div className="w-full bg-slate-800/80 rounded-full h-1.5">
                     <div 
-                      className="bg-harx-alt-600 h-1.5 rounded-full" 
+                      className="bg-harx-alt-400 h-full rounded-full" 
                       style={{ width: `${results.keyMetrics.effectiveness}%` }}
                     ></div>
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="bg-white/5 border border-white/5 p-5 rounded-2xl backdrop-blur-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-gray-800">Customer Focus</h4>
-                    <span className="font-bold text-harx-alt-600">{results.keyMetrics.customerFocus}%</span>
+                    <h4 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Customer Focus</h4>
+                    <span className="font-black text-harx-100 text-sm">{results.keyMetrics.customerFocus}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                  <div className="w-full bg-slate-800/80 rounded-full h-1.5">
                     <div 
-                      className="bg-harx-alt-600 h-1.5 rounded-full" 
+                      className="bg-harx-500 h-full rounded-full" 
                       style={{ width: `${results.keyMetrics.customerFocus}%` }}
                     ></div>
                   </div>
                 </div>
               </div>
               
-              <div className="space-y-4 mb-6">
-                <div className="bg-emerald-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-800 mb-2">Strengths</h4>
-                  <ul className="list-disc pl-5 space-y-1">
+              <div className="space-y-6 mb-10 relative z-10">
+                <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 rounded-2xl backdrop-blur-sm">
+                  <h4 className="font-bold text-emerald-400 mb-4 uppercase tracking-widest text-[10px]">Key Strengths</h4>
+                  <ul className="space-y-2">
                     {results.strengths.map((strength, index) => (
-                      <li key={index} className="text-emerald-700">{strength}</li>
+                      <li key={index} className="text-emerald-100 text-sm flex items-start">
+                        <span className="mr-2 mt-1">✓</span>
+                        {strength}
+                      </li>
                     ))}
                   </ul>
                 </div>
                 
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-gray-800 mb-2">Areas for Improvement</h4>
-                  <ul className="list-disc pl-5 space-y-1">
+                <div className="bg-harx-500/10 border border-harx-500/20 p-6 rounded-2xl backdrop-blur-sm">
+                  <h4 className="font-bold text-harx-500 mb-4 uppercase tracking-widest text-[10px]">Areas for Improvement</h4>
+                  <ul className="space-y-2">
                     {results.improvements.map((improvement, index) => (
-                      <li key={index} className="text-gray-600">{improvement}</li>
+                      <li key={index} className="text-harx-100 text-sm flex items-start">
+                        <span className="mr-2 mt-1">○</span>
+                        {improvement}
+                      </li>
                     ))}
                   </ul>
                 </div>
               </div>
               
-              <div className="bg-harx-alt-50 p-4 rounded-lg mb-6">
-                <h4 className="font-medium text-gray-800 mb-2">Feedback</h4>
-                <p className="text-gray-600">{results.feedback}</p>
+              <div className="bg-white/5 border border-white/5 p-6 rounded-2xl mb-10 relative z-10">
+                <h4 className="font-black text-white mb-3 uppercase tracking-widest text-[10px] opacity-40">Expert Feedback</h4>
+                <p className="text-slate-200 leading-relaxed italic text-sm font-medium">"{results.feedback}"</p>
               </div>
               
-              <div className="bg-harx-50 p-4 rounded-lg mb-6">
-                <h4 className="font-medium text-gray-800 mb-2">Tips for Improvement</h4>
-                <ul className="list-disc pl-5 space-y-1">
+              <div className="bg-gradient-to-r from-harx-500/10 to-transparent border-l-4 border-harx-500 p-6 rounded-r-2xl mb-12 relative z-10">
+                <h4 className="font-black text-harx-500 mb-4 uppercase tracking-widest text-[10px]">Strategic Tips</h4>
+                <ul className="space-y-3">
                   {results.tips.map((tip, index) => (
-                    <li key={index} className="text-gray-600">{tip}</li>
+                    <li key={index} className="text-slate-200 text-sm flex items-start">
+                      <span className="text-harx-500 mr-2">✦</span>
+                      {tip}
+                    </li>
                   ))}
                 </ul>
               </div>
               
-              <div className="flex gap-4">
+              <div className="flex gap-6 relative z-10">
                 <button
                   onClick={handleReset}
-                  className="flex-1 py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 py-4 px-6 bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-2xl hover:bg-slate-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest text-[10px]"
                 >
                   Try Another Scenario
                 </button>
                 <button
                   onClick={saveResults}
-                  className="flex-1 py-2 px-4 bg-harx-alt-600 text-white rounded-lg hover:bg-harx-alt-700 transition-colors"
+                  className="flex-1 py-4 px-6 bg-gradient-harx text-white font-black rounded-2xl hover:-translate-y-0.5 transition-all shadow-2xl shadow-harx-500/20 active:scale-95 uppercase tracking-widest text-[10px]"
                 >
-                  Save Results
+                  Save Assessment Results
                 </button>
               </div>
             </div>

@@ -56,7 +56,8 @@ export default {
       },
       backgroundImage: {
         'gradient-harx': 'linear-gradient(to right, #ff4d4d, #ec4899)',
-        'premium-gradient': 'radial-gradient(circle at top left, #fff5f5 0%, #ffffff 100%)',
+        'premium-gradient': 'radial-gradient(circle at top left, #020617 0%, #0f172a 100%)',
+        'mesh-gradient': 'radial-gradient(at 0% 0%, rgba(255, 77, 77, 0.15) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.1) 0px, transparent 50%)',
       },
     },
   },

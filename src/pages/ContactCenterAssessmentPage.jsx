@@ -56,16 +56,17 @@ function ContactCenterAssessmentPage() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div className="py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden transition-all duration-500 hover:shadow-harx-500/10">
-          <div className="bg-gradient-harx px-8 py-6 flex justify-between items-center">
-            <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+        <div className="glass-card rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-harx-500/20 shadow-2xl">
+          <div className="bg-gradient-harx px-10 py-8 flex justify-between items-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+            <h1 className="text-3xl font-black text-white tracking-widest uppercase relative z-10">
               {category}: {skill.name} Assessment
             </h1>
               <button
                 onClick={returnToParentApp}
-                className="px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all border border-white/10 font-bold uppercase tracking-wider text-xs"
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-all border border-white/20 font-black uppercase tracking-widest text-[10px] relative z-10 active:scale-95"
               >
                 Exit
               </button>

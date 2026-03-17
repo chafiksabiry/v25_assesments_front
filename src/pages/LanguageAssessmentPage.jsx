@@ -93,9 +93,9 @@ function LanguageAssessmentPage() {
   // Error state when required parameters are missing
   if (!hasRequiredParams) {
     return (
-      <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+      <div className="min-h-[80vh] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl w-full">
+          <div className="glass-card rounded-[2rem] p-10 text-center border-red-500/20">
             <h3 className="text-red-600 text-lg font-semibold mb-2">Missing Required Parameters</h3>
             <p className="text-gray-700 mb-4">
               You must provide both <code>lang</code> (or <code>language</code>) and <code>code</code> parameters.
@@ -105,7 +105,7 @@ function LanguageAssessmentPage() {
             </p>
             <button
               onClick={() => window.location.href = '/assessment/language?lang=English&code=en'}
-              className="px-4 py-2 bg-harx-600 text-white rounded-lg hover:bg-harx-700 transition-colors"
+              className="px-8 py-4 bg-gradient-harx text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-2xl shadow-harx-500/30 hover:-translate-y-1 transition-all"
             >
               Go to English Assessment
             </button>
@@ -116,16 +116,17 @@ function LanguageAssessmentPage() {
   }
   
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white/80 backdrop-blur-md rounded-[2.5rem] shadow-2xl border border-white/20 overflow-hidden transition-all duration-500 hover:shadow-harx-500/10">
-          <div className="bg-gradient-harx px-8 py-6 flex justify-between items-center">
-            <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+        <div className="glass-card rounded-[2.5rem] overflow-hidden transition-all duration-500 hover:shadow-harx-500/20 shadow-2xl">
+          <div className="bg-gradient-harx px-10 py-8 flex justify-between items-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+            <h1 className="text-3xl font-black text-white tracking-widest uppercase relative z-10">
               {displayLanguageName} Assessment
             </h1>
               <button 
                 onClick={returnToParentApp}
-                className="px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl backdrop-blur-sm transition-all border border-white/10 font-bold uppercase tracking-wider text-xs"
+                className="px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl backdrop-blur-md transition-all border border-white/20 font-black uppercase tracking-widest text-[10px] relative z-10 active:scale-95"
               >
                 Exit
               </button>

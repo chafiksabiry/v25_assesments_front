@@ -3,10 +3,11 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoadingScreen = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-harx-50 via-white to-harx-alt-50">
-    <div className="flex flex-col items-center">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-harx-500"></div>
-      <p className="mt-4 text-gray-600">Vérification de l'authentification...</p>
+  <div className="min-h-screen flex items-center justify-center bg-premium-gradient relative overflow-hidden">
+    <div className="absolute inset-0 bg-mesh-gradient opacity-60 pointer-events-none"></div>
+    <div className="flex flex-col items-center relative z-10">
+      <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-harx-500 shadow-lg shadow-harx-500/20"></div>
+      <p className="mt-8 text-white font-black uppercase tracking-widest text-[10px] opacity-70">Authenticating...</p>
     </div>
   </div>
 );

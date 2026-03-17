@@ -287,20 +287,23 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
       {!results ? (
         // Assessment taking UI
         <>
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+          <div className="glass-card rounded-2xl shadow-xl border-harx-500/10 p-8 mb-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-harx-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <h2 className="text-xl font-black text-white mb-4 uppercase tracking-wider">
               {passage?.title}
             </h2>
-            <p className="text-sm text-gray-500 mb-4">
-              Read the following passage aloud in {getCleanLanguageName()}. Click "Start Recording" when ready.
+            <div className="flex items-center gap-2 mb-6 opacity-60">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Read aloud in {getCleanLanguageName()}
+              </span>
               {passage?.estimatedDuration && (
-                <span className="block mt-1 text-xs text-gray-400">
-                  Estimated reading time: ~{passage.estimatedDuration} seconds
+                <span className="text-[10px] font-bold text-harx-500 uppercase tracking-widest border-l border-white/20 pl-2">
+                  ~{passage.estimatedDuration}s
                 </span>
               )}
-            </p>
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <p className="text-gray-800 leading-relaxed">{passage?.text}</p>
+            </div>
+            <div className="bg-gradient-to-br from-harx-500/10 to-transparent p-6 rounded-2xl border border-harx-500/20 backdrop-blur-sm shadow-inner">
+              <p className="text-xl text-harx-100 leading-relaxed font-medium">{passage?.text}</p>
             </div>
           </div>
 
@@ -308,18 +311,20 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
             {!audioBlob ? (
               <button
                 onClick={recording ? stopRecording : startRecording}
-                className={`px-8 py-4 rounded-2xl text-white font-black uppercase tracking-widest text-xs flex items-center shadow-lg transition-all duration-300 hover:-translate-y-0.5 ${recording ? 'bg-harx-600 hover:bg-harx-700 shadow-harx-500/20' : 'bg-harx-alt-500 hover:bg-harx-alt-600 shadow-harx-alt-500/20'
+                className={`px-10 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-[10px] flex items-center shadow-2xl transition-all duration-300 hover:-translate-y-1 active:scale-95 ${recording 
+                    ? 'bg-red-600 shadow-red-500/20 border border-red-500/30' 
+                    : 'bg-gradient-harx shadow-harx-500/30'
                   }`}
                 disabled={isGenerating}
               >
                 {recording ? (
                   <>
-                    <span className="h-3 w-3 rounded-full bg-white animate-pulse mr-2"></span>
+                    <span className="h-3 w-3 rounded-full bg-white animate-pulse mr-3"></span>
                     Stop Recording
                   </>
                 ) : (
                   <>
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 2a2 2 0 00-2 2v6a2 2 0 104 0V4a2 2 0 00-2-2z" />
                       <path d="M14 8a1 1 0 00-2 0v2a2 2 0 01-2 2 2 2 0 01-2-2V8a1 1 0 10-2 0v2a4 4 0 004 4h.5a.5.5 0 01.5.5v.5h-2a1 1 0 100 2h6a1 1 0 100-2h-2v-.5a.5.5 0 01.5-.5h.5a4 4 0 004-4V8a1 1 0 00-2 0z" />
                     </svg>
@@ -335,25 +340,25 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
                 <div className="flex justify-center space-x-3">
                   <button
                     onClick={() => setAudioBlob(null)}
-                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                    className="px-6 py-3 bg-slate-800 text-slate-300 rounded-xl hover:bg-slate-700 transition-all font-bold uppercase tracking-widest text-[10px] border border-slate-700 active:scale-95"
                   >
                     Record Again
                   </button>
                   <button
                     onClick={analyzeAudio}
-                    className="px-6 py-2.5 bg-gradient-harx text-white rounded-xl hover:shadow-lg hover:shadow-harx-500/20 transition-all hover:-translate-y-0.5 font-bold uppercase tracking-wider text-xs"
+                    className="px-8 py-3 bg-gradient-harx text-white rounded-xl shadow-2xl shadow-harx-500/20 transition-all hover:-translate-y-0.5 font-black uppercase tracking-widest text-[10px] active:scale-95"
                     disabled={analyzing}
                   >
                     {analyzing ? (
                       <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                         Analyzing...
                       </span>
                     ) : (
-                      'Submit Recording'
+                      'Submit Assessment'
                     )}
                   </button>
                 </div>
@@ -361,10 +366,10 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
             )}
           </div>
 
-          <div className="text-center">
+          <div className="text-center mt-8">
             <button
               onClick={handleExit}
-              className="text-harx-600 hover:text-harx-800 text-sm font-medium"
+              className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest opacity-60 hover:opacity-100 transition-all"
             >
               Exit Assessment
             </button>
@@ -372,109 +377,120 @@ function LanguageAssessment({ language, displayName, onComplete, onExit }) {
         </>
       ) : (
         // Results display UI
-        <div className="space-y-6">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-50 text-emerald-600 mb-6 shadow-sm border border-emerald-100">
+        <div className="glass-card rounded-3xl shadow-2xl border-harx-500/10 p-10 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-harx-500/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+          
+          <div className="text-center mb-10 relative z-10">
+            <div className="inline-flex items-center justify-center h-28 w-28 rounded-3xl bg-gradient-harx text-white mb-6 shadow-2xl shadow-harx-500/30">
               <span className="text-4xl font-black">{results.overall?.score || 0}</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">
-              {results.overall?.score >= 70 ? 'Great job!' : 'Good effort!'}
+            <h2 className="text-3xl font-black text-white tracking-tighter uppercase mb-2">
+              {results.overall?.score >= 70 ? 'Expert Performance' : 'Good Progress'}
             </h2>
-            <p className="text-gray-600">
-              Your CEFR level: <span className="font-semibold">{mapScoreToCEFR(results.overall?.score || 0)}</span>
-            </p>
+            <div className="flex justify-center items-center gap-3">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Global Ranking:</span>
+              <span className="text-[10px] font-black px-4 py-1.5 bg-harx-500 text-white rounded-full uppercase tracking-widest">
+                CEFR {mapScoreToCEFR(results.overall?.score || 0)}
+              </span>
+            </div>
             {showScoreComparison()}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-2">Completeness</h3>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-harx-600">{results.completeness?.score || 0}/100</span>
+          <div className="grid gap-6 md:grid-cols-2 mb-10 relative z-10">
+            <div className="bg-white/5 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Completeness</h3>
+                <span className="font-black text-harx-500 text-sm">{results.completeness?.score || 0}%</span>
               </div>
-              <p className="text-sm text-gray-700">{results.completeness?.feedback || "No completeness assessment available"}</p>
+              <p className="text-xs text-slate-300 leading-relaxed italic opacity-80 mb-4 h-12 overflow-y-auto">{results.completeness?.feedback || "No completeness assessment available"}</p>
+              <div className="w-full bg-slate-800/80 rounded-full h-1.5">
+                <div className="bg-harx-500 h-full rounded-full" style={{ width: `${results.completeness?.score || 0}%` }}></div>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-2">Fluency</h3>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-harx-600">{results.fluency?.score || 0}/100</span>
+            <div className="bg-white/5 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Fluency</h3>
+                <span className="font-black text-harx-alt-400 text-sm">{results.fluency?.score || 0}%</span>
               </div>
-              <p className="text-sm text-gray-700">{results.fluency?.feedback || "No fluency assessment available"}</p>
+              <p className="text-xs text-slate-300 leading-relaxed italic opacity-80 mb-4 h-12 overflow-y-auto">{results.fluency?.feedback || "No fluency assessment available"}</p>
+              <div className="w-full bg-slate-800/80 rounded-full h-1.5">
+                <div className="bg-harx-alt-400 h-full rounded-full" style={{ width: `${results.fluency?.score || 0}%` }}></div>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-2">Proficiency</h3>
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Score</span>
-                <span className="font-bold text-harx-600">{results.proficiency?.score || 0}/100</span>
+            <div className="bg-white/5 border border-white/5 p-6 rounded-2xl backdrop-blur-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest">Proficiency</h3>
+                <span className="font-black text-harx-500 text-sm">{results.proficiency?.score || 0}%</span>
               </div>
-              <p className="text-sm text-gray-700">{results.proficiency?.feedback || "No proficiency assessment available"}</p>
+              <p className="text-xs text-slate-300 leading-relaxed italic opacity-80 mb-4 h-12 overflow-y-auto">{results.proficiency?.feedback || "No proficiency assessment available"}</p>
+              <div className="w-full bg-slate-800/80 rounded-full h-1.5">
+                <div className="bg-harx-500 h-full rounded-full" style={{ width: `${results.proficiency?.score || 0}%` }}></div>
+              </div>
             </div>
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 col-span-1">
-              <h3 className="font-medium text-gray-800 mb-2">Language Match</h3>
-              <p className="text-sm text-gray-700">
+            <div className="bg-white/5 border border-white/5 p-6 rounded-2xl backdrop-blur-sm flex flex-col justify-center">
+              <h3 className="font-bold text-slate-400 text-[10px] uppercase tracking-widest mb-3">Language Match</h3>
+              <p className="text-xs text-slate-200 font-medium">
                 {results.languageOrTextMismatch
-                  ? "The language spoken doesn't match the expected language or the text was not read correctly."
-                  : "The language spoken matches the expected language."}
+                  ? "⚠ Mismatch detected. Accuracy may be affected."
+                  : "✓ Language profile verified successfully."}
               </p>
             </div>
           </div>
 
-          <div className="bg-harx-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-800 mb-2">Overall Assessment</h3>
-            <div className="space-y-2">
+          <div className="bg-gradient-to-r from-harx-500/10 to-transparent border-l-4 border-harx-500 p-6 rounded-r-2xl mb-10 relative z-10">
+            <h3 className="font-black text-harx-500 mb-4 uppercase tracking-widest text-[10px]">Strategic Recommendations</h3>
+            <div className="space-y-4">
               {results.overall?.areasForImprovement && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700">Areas for Improvement:</h4>
-                  <p className="text-gray-700">{results.overall.areasForImprovement}</p>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Growth Areas:</h4>
+                  <p className="text-sm text-slate-200 leading-relaxed font-medium">{results.overall.areasForImprovement}</p>
                 </div>
               )}
               {results.overall?.strengths && (
                 <div>
-                  <h4 className="text-sm font-medium text-gray-700">Strengths:</h4>
-                  <p className="text-gray-700">{results.overall.strengths}</p>
+                  <h4 className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-1">Top Strengths:</h4>
+                  <p className="text-sm text-emerald-100/80 leading-relaxed font-medium">{results.overall.strengths}</p>
                 </div>
               )}
               {!results.overall?.areasForImprovement && !results.overall?.strengths && (
-                <p className="text-gray-700">No detailed assessment available.</p>
+                <p className="text-slate-400 italic text-sm">Detailed feedback is being generated...</p>
               )}
             </div>
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="flex justify-between items-center pt-4 relative z-10">
             <button
               onClick={retakeAssessment}
-              className="px-4 py-2 bg-white border border-harx-600 text-harx-600 rounded-lg hover:bg-harx-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-4 bg-slate-800 border border-slate-700 text-slate-300 font-bold rounded-2xl hover:bg-slate-700 transition-all shadow-xl active:scale-95 uppercase tracking-widest text-[10px] disabled:opacity-50"
               disabled={isGenerating}
             >
               {isGenerating ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-harx-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-harx-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Generating New Text...
+                  Generating...
                 </span>
               ) : (
-                'Retake with New Text'
+                'Retake Assessment'
               )}
             </button>
 
-            <div className="space-x-3">
+            <div className="flex gap-4">
               <button
                 onClick={handleExit}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-8 py-4 bg-white/5 border border-white/10 text-slate-300 font-bold rounded-2xl hover:bg-white/10 transition-all uppercase tracking-widest text-[10px]"
               >
                 Exit
               </button>
 
               <button
                 onClick={completeAssessment}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="px-10 py-4 bg-gradient-harx text-white font-black rounded-2xl shadow-2xl shadow-harx-500/20 hover:-translate-y-0.5 transition-all uppercase tracking-widest text-[10px] active:scale-95"
               >
                 Save Results
               </button>

@@ -58,8 +58,8 @@ function Notification({ message, type = 'success', duration = 5000, onClose }) {
   };
 
   return (
-    <div className={`fixed bottom-6 right-6 px-6 py-4 rounded-2xl shadow-2xl z-50 transition-all transform duration-500 animate-fade-in backdrop-blur-md border border-white/20 text-white ${getTypeStyles()}`}>
-      <div className="flex items-center space-x-2">
+    <div className={`fixed bottom-8 right-8 px-8 py-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[100] transition-all transform duration-500 animate-fade-in glass-card border border-white/10 text-white ${getTypeStyles()}`}>
+      <div className="flex items-center space-x-4">
         {getIcon()}
         <span className="font-medium">{message}</span>
         <button 

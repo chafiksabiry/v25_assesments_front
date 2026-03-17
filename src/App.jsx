@@ -26,9 +26,12 @@ function App() {
       <AssessmentProvider>
         <Router basename={basename}>
           <ProtectedRoute>
-            <div className="min-h-screen bg-premium-gradient">
+            <div className="min-h-screen bg-premium-gradient relative overflow-hidden flex flex-col">
+              {/* Mesh Gradient Overlay */}
+              <div className="absolute inset-0 bg-mesh-gradient opacity-60 pointer-events-none"></div>
+              
               <TopBar />
-              <div className="flex-1">
+              <div className="flex-1 relative z-10">
                 <Routes>
                   {/* Language assessment route with query parameters */}
                   <Route path="/assessment/language" element={<LanguageAssessmentPage />} />

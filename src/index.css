@@ -56,18 +56,18 @@
 
 /* Typography and smooth transitions */
 body {
-  @apply antialiased text-gray-900 bg-white;
+  @apply antialiased text-slate-200 bg-[#020617];
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Glassmorphism utility */
 .glass-card {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl;
 }
 
 .glass-morphism {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
